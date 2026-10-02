@@ -86,6 +86,7 @@ export default function Footer() {
       <div className="footer-bottom">
         <div className="container">
           <p>© 2025 Expert Mommy, All Rights Reserved. Made with <span>♥</span> by Pushpa Rani</p>
+          <p><a href="https://lexabiz.in/" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>Crafted by Lexbiz.in</a></p>
         </div>
       </div>
     </footer>
