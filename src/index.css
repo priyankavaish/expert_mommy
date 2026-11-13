@@ -1226,6 +1226,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .collection-heading .eyebrow { margin-bottom:12px; }
 .section-intro { color:var(--text-medium); font-size:12px; line-height:1.9; margin-bottom:30px; }
 .knit-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:25px; }
+.view-more-wrap { display:flex; justify-content:center; margin-top:38px; }
 .knit-card { min-width:0; transition:transform .3s; }
 .knit-card:hover { transform:translateY(-5px); }
 .knit-card-photo { display:block; position:relative; overflow:hidden; background:#eee7dc; aspect-ratio:4/4.7; border-radius:4px; }
@@ -1337,9 +1338,10 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .enquiry-item > a { flex:1; font-size:14px; }.enquiry-item span { display:block; font-size:11px; color:var(--text-medium); margin-top:5px; }
 @media(min-width:1500px) { .atelier-hero-grid { min-height:670px; } }
 @media(max-width:1050px) {
- .atelier-nav { gap:20px; }.atelier-detail-grid { gap:30px; }.knit-grid { gap:18px; }
+ .atelier-nav { gap:20px; }.atelier-detail-grid { gap:30px; }.knit-grid { gap:18px; grid-template-columns:repeat(3,minmax(0,1fr)); }
  .collection-toolbar { align-items:flex-start; flex-direction:column; }.craft-story-grid { gap:45px; }
  .atelier-footer-grid { gap:25px; grid-template-columns:1fr 1fr; }.custom-panel { padding:40px; }
+ .collection-controls { width:100%; }.collection-search { flex:1; }.collection-search input { width:100%; }
 }
 @media(max-width:760px) {
  .atelier-announcement { font-size:9px; }.atelier-announcement span { display:block; margin:2px 0 0; }
@@ -1367,6 +1369,10 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
  .collection-count span { display:block; margin-top:4px; }.collection-custom { flex-direction:column; padding:25px; align-items:flex-start; gap:15px; margin-top:40px; }
  .atelier-detail-grid { grid-template-columns:1fr; gap:25px; }.detail-copy { padding-top:0; }.detail-copy h1 { font-size:34px; }.detail-thumbnails button { width:56px; height:60px; }
  .atelier-breadcrumb { font-size:9px; padding:18px 0; }.detail-photo { max-height:500px; }.detail-copy .eyebrow { font-size:9px; }
+}
+@media(max-width:400px) {
+ .knit-grid { gap:22px 10px; }
+ .collection-tabs a { padding:7px 10px; font-size:10px; }.collection-controls select { max-width:120px; }
 }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { transition:none!important; animation:none!important; } }
 
