@@ -1,169 +1,24 @@
-import { useState, useMemo } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { SlidersHorizontal, Heart, Package, ArrowRight } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Search } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
-import { CATEGORIES } from '../data/initialData'
-
-function ProductCard({ product }) {
-  const { dispatch, toast } = useStore()
-  const navigate = useNavigate()
-  const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-
-  return (
-    <div className="product-card" onClick={() => navigate(`/product/${product.id}`)}>
-      <div className="pcard-image-wrap">
-        <img src={product.image} alt={product.name} className="pcard-img" />
-        <div className="pcard-badges">
-          {product.newArrival && <span className="badge badge-new">New</span>}
-          {discount > 0 && <span className="badge badge-sale">{discount}% Off</span>}
-        </div>
-        <div className="pcard-actions">
-          <button className="pact-btn" onClick={e => { e.stopPropagation(); dispatch({ type: 'TOGGLE_WISHLIST', payload: product.id }) }} title="Wishlist">
-            <Heart size={15} />
-          </button>
-        </div>
-        <button className="add-bar" onClick={e => {
-          e.stopPropagation()
-          dispatch({ type: 'ADD_TO_CART', payload: { productId: product.id, name: product.name, price: product.price, image: product.image, qty: 1, category: product.category } })
-          toast(`${product.name} added to cart!`)
-        }}>
-          <Package size={14} /> Add to Cart
-        </button>
-      </div>
-      <div className="pcard-body">
-        <div className="pcard-cat">{CATEGORIES.find(c => c.id === product.category)?.name || product.category}</div>
-        <div className="pcard-name">{product.name}</div>
-        <div className="pcard-rating">
-          <span className="stars">{'★'.repeat(Math.round(product.rating))}</span>
-          <span className="rcount">({product.reviews})</span>
-        </div>
-        <div className="pcard-price">
-          <span className="price-now">₹{product.price.toLocaleString()}</span>
-          {product.originalPrice > product.price && <span className="price-was">₹{product.originalPrice.toLocaleString()}</span>}
-          {discount > 0 && <span className="price-off">{discount}%</span>}
-        </div>
-      </div>
-    </div>
-  )
-}
-
+import ProductCard from '../components/ProductCard'
+import { customUrl } from '../data/whatsapp'
+import { SWEATER_GROUPS } from '../assets/products'
+import useReveal from '../hooks/useReveal'
 export default function Shop() {
-  const { state } = useStore()
-  const { category } = useParams()
-  const [searchParams] = useSearchParams()
-  const filter = searchParams.get('filter')
-
-  const [selectedCats, setSelectedCats] = useState(category ? [category] : [])
-  const [priceMin, setPriceMin] = useState('')
-  const [priceMax, setPriceMax] = useState('')
-  const [sortBy, setSortBy] = useState('default')
-
-  const toggleCat = (id) => setSelectedCats(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
-
-  const products = useMemo(() => {
-    let list = [...state.products]
-    if (filter === 'new') list = list.filter(p => p.newArrival)
-    if (filter === 'featured') list = list.filter(p => p.featured)
-    if (selectedCats.length > 0) list = list.filter(p => selectedCats.includes(p.category))
-    if (priceMin) list = list.filter(p => p.price >= Number(priceMin))
-    if (priceMax) list = list.filter(p => p.price <= Number(priceMax))
-    switch (sortBy) {
-      case 'price-asc': return list.sort((a, b) => a.price - b.price)
-      case 'price-desc': return list.sort((a, b) => b.price - a.price)
-      case 'rating': return list.sort((a, b) => b.rating - a.rating)
-      case 'newest': return list.sort((a, b) => (b.newArrival ? 1 : 0) - (a.newArrival ? 1 : 0))
-      default: return list
-    }
-  }, [state.products, selectedCats, priceMin, priceMax, sortBy, filter])
-
-  const pageTitle = filter === 'new' ? 'New Arrivals' : filter === 'featured' ? 'Featured Products' : category ? CATEGORIES.find(c => c.id === category)?.name || 'Shop' : 'All Products'
-
-  return (
-    <>
-      <div className="page-banner">
-        <div className="container">
-          <div className="breadcrumb">
-            <span>Home</span><span className="sep">/</span><span className="current">{pageTitle}</span>
-          </div>
-          <h1 className="page-banner-title">{pageTitle}</h1>
-        </div>
-      </div>
-
-      <div className="container">
-        <div className="shop-layout">
-          {/* Sidebar */}
-          <aside className="shop-sidebar">
-            <div className="sidebar-header"><SlidersHorizontal size={15} /> Filters</div>
-
-            <div className="filter-section">
-              <div className="filter-title">Categories</div>
-              {CATEGORIES.map(cat => (
-                <label key={cat.id} className="filter-option">
-                  <input type="checkbox" checked={selectedCats.includes(cat.id)} onChange={() => toggleCat(cat.id)} />
-                  <label>{cat.name}</label>
-                </label>
-              ))}
-            </div>
-
-            <div className="filter-section">
-              <div className="filter-title">Price Range (₹)</div>
-              <div className="price-inputs">
-                <input className="price-inp" type="number" placeholder="Min" value={priceMin} onChange={e => setPriceMin(e.target.value)} />
-                <span style={{ color: 'var(--text-light)', fontSize: 13 }}>–</span>
-                <input className="price-inp" type="number" placeholder="Max" value={priceMax} onChange={e => setPriceMax(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="filter-section">
-              <div className="filter-title">Availability</div>
-              <label className="filter-option">
-                <input type="checkbox" />
-                <label>In Stock Only</label>
-              </label>
-              <label className="filter-option">
-                <input type="checkbox" />
-                <label>New Arrivals</label>
-              </label>
-            </div>
-
-            <div style={{ padding: '14px 20px' }}>
-              <button className="btn btn-ghost btn-sm w-full" onClick={() => { setSelectedCats([]); setPriceMin(''); setPriceMax('') }}>
-                Clear All Filters
-              </button>
-            </div>
-          </aside>
-
-          {/* Main */}
-          <div className="shop-main">
-            <div className="shop-toolbar">
-              <span className="results-text">Showing <strong>{products.length}</strong> products</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 13, color: 'var(--text-medium)' }}>Sort by:</span>
-                <select className="sort-sel" value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                  <option value="default">Default</option>
-                  <option value="newest">Newest First</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="rating">Top Rated</option>
-                </select>
-              </div>
-            </div>
-
-            {products.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">🧶</div>
-                <div className="empty-title">No products found</div>
-                <div className="empty-desc">Try adjusting your filters</div>
-                <button className="btn btn-primary" onClick={() => { setSelectedCats([]); setPriceMin(''); setPriceMax('') }}>Clear Filters</button>
-              </div>
-            ) : (
-              <div className="products-grid">
-                {products.map(p => <ProductCard key={p.id} product={p} />)}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </>
-  )
+ const { state } = useStore()
+ const { category } = useParams()
+ const [params] = useSearchParams()
+ const [query, setQuery] = useState('')
+ const [sort, setSort] = useState('collection')
+ const selected = ['crochet', 'hand-knitted'].includes(category) ? category : 'all'
+ const products = useMemo(() => {
+   let list = state.products.filter(p => (selected === 'all' || p.category === selected) && (!params.get('filter') || params.get('filter') !== 'featured' || p.featured) && p.name.toLowerCase().includes(query.toLowerCase()))
+   if (sort === 'low') list.sort((a,b) => a.price - b.price)
+   if (sort === 'high') list.sort((a,b) => b.price - a.price)
+   return list
+ }, [state.products, selected, query, sort, params])
+ useReveal([products.length])
+ return <main className="atelier"><section className="collection-banner"><div className="container collection-banner-grid"><div><span className="eyebrow">THE HANDMADE EDIT</span><h1>A little collection.<br/><em>A whole lot of warmth.</em></h1><p>Hand-knitted & crochet sweaters, each made with love.<br/>One piece per design. Find the one that feels like you.</p></div><div className="collection-banner-art"><span className="collection-flower" aria-hidden="true">&#10035;</span><img src={SWEATER_GROUPS.tealCrochetDress[0]} alt="Handmade teal crochet dress from Expert Mommy" fetchPriority="high"/></div></div></section><section className="container atelier-section reveal"><div className="collection-toolbar"><nav className="collection-tabs" aria-label="Sweater type">{[['all','All sweaters'],['hand-knitted','Hand knitted'],['crochet','Crochet']].map(([id,label]) => <Link key={id} className={selected === id ? 'selected' : ''} to={id === 'all' ? '/shop' : '/shop/'+id}>{label}</Link>)}</nav><div className="collection-controls"><label className="collection-search"><Search size={16}/><input aria-label="Search sweaters" placeholder="Find a sweater..." value={query} onChange={e => setQuery(e.target.value)}/></label><select aria-label="Sort sweaters" value={sort} onChange={e=>setSort(e.target.value)}><option value="collection">Collection order</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select></div></div><div className="collection-count">{products.length} handmade piece{products.length === 1 ? '' : 's'} <span>&middot; Just 1 of each &middot; Ages are approximate; confirm measurements on WhatsApp</span></div>{products.length ? <div className="knit-grid">{products.map(p=><ProductCard key={p.id} product={p}/>)}</div> : <div className="empty-state"><h2>No sweaters found</h2><p>Try another name or browse all sweaters.</p><button className="btn btn-outline" onClick={()=>setQuery('')}>Clear search</button></div>}<div className="collection-custom"><div><span className="eyebrow">DREAMING OF SOMETHING DIFFERENT?</span><h2>We take custom orders, too.</h2><p>Tell us your colour, size and design ideas. We'll take it from there.</p></div><a className="btn btn-outline" href={customUrl} target="_blank" rel="noopener noreferrer">Discuss your idea</a></div></section></main>
 }

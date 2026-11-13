@@ -36,7 +36,7 @@ export default function AdminUsers() {
         {[
           { label: 'Total Customers', value: state.users.filter(u => u.role === 'customer').length },
           { label: 'Active (with orders)', value: state.users.filter(u => u.orders?.length > 0).length },
-          { label: 'New This Month', value: state.users.filter(u => u.createdAt?.startsWith('2025')).length }
+          { label: 'New This Month', value: state.users.filter(u => u.createdAt?.startsWith('2026')).length }
         ].map(({ label, value }) => (
           <div key={label} className="adm-card" style={{ padding: '18px 22px' }}>
             <div style={{ fontSize: 12, color: 'var(--text-light)', marginBottom: 4 }}>{label}</div>

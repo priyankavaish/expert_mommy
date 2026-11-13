@@ -5,6 +5,7 @@ const StoreContext = createContext()
 
 const defaultState = {
   products: INITIAL_PRODUCTS,
+  catalogVersion: 3,
   cart: [],
   wishlist: [],
   user: null,
@@ -22,15 +23,19 @@ function loadState() {
     if (!saved) return defaultState
     const parsed = JSON.parse(saved)
     // Re-attach images (they are module references, not serializable)
-    const productsWithImages = parsed.products.map(p => {
+    const catalogue = parsed.catalogVersion === 3 ? parsed.products : INITIAL_PRODUCTS.map(original => {
+      const savedProduct = parsed.products?.find(product => product.id === original.id)
+      return savedProduct ? { ...original, price: savedProduct.price ?? original.price, stock: Math.min(1, savedProduct.stock ?? 1) } : original
+    })
+    const productsWithImages = catalogue.map(p => {
       const orig = INITIAL_PRODUCTS.find(op => op.id === p.id)
-      return orig ? { ...p, image: orig.image } : p
+      return orig ? { ...p, image: orig.image, images: orig.images, ageGroup: p.ageGroup || orig.ageGroup, stock: Math.min(1, p.stock) } : p
     })
     const ordersWithImages = (parsed.orders || []).map(o => ({
       ...o,
       items: o.items.map(item => {
         const prod = INITIAL_PRODUCTS.find(p => p.id === item.productId)
-        return { ...item, image: prod ? prod.image : item.image }
+        return { ...item, image: prod ? prod.image : '' }
       })
     }))
     return {
@@ -38,6 +43,8 @@ function loadState() {
       ...parsed,
       products: productsWithImages,
       orders: ordersWithImages,
+      catalogVersion: 3,
+      cart: (parsed.cart || []).filter(i => productsWithImages.some(p => p.id === i.productId && p.stock > 0)).map(i => { const p = productsWithImages.find(p => p.id === i.productId); return { ...i, name: p.name, image: p.image, price: p.price, qty: 1 } }),
       toasts: []
     }
   } catch {
@@ -49,16 +56,16 @@ function reducer(state, action) {
   switch (action.type) {
     /* ── Cart ── */
     case 'ADD_TO_CART': {
+      const product = state.products.find(p => p.id === action.payload.productId)
+      if (!product || product.stock < 1) return state
       const existing = state.cart.find(i => i.productId === action.payload.productId)
-      if (existing) {
-        return { ...state, cart: state.cart.map(i => i.productId === action.payload.productId ? { ...i, qty: i.qty + action.payload.qty } : i) }
-      }
-      return { ...state, cart: [...state.cart, action.payload] }
+      if (existing) return state
+      return { ...state, cart: [...state.cart, { ...action.payload, qty: 1 }] }
     }
     case 'REMOVE_FROM_CART':
       return { ...state, cart: state.cart.filter(i => i.productId !== action.payload) }
     case 'UPDATE_CART_QTY':
-      return { ...state, cart: state.cart.map(i => i.productId === action.payload.productId ? { ...i, qty: Math.max(1, action.payload.qty) } : i) }
+      return { ...state, cart: state.cart.map(i => i.productId === action.payload.productId ? { ...i, qty: 1 } : i) }
     case 'CLEAR_CART':
       return { ...state, cart: [] }
 
