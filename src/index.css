@@ -1463,5 +1463,6 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .instagram-tile-icon { position:absolute; top:10px; right:10px; display:grid; place-items:center; width:29px; height:29px; border-radius:50%; background:#fff9f1e8; color:var(--primary); }
 .instagram-tile-hover { position:absolute; bottom:0; left:0; right:0; padding:25px 8px 12px; display:flex; align-items:center; justify-content:center; gap:5px; background:linear-gradient(transparent,#382b30b3); color:white; font-size:9px; }
 .instagram-gallery-footer { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:25px; font-size:12px; color:var(--primary); }
-@media(max-width:1050px) { .instagram-photo-track > a { max-width:170px; } }
-@media(max-width:760px) { .instagram-section { padding:45px 0; } .instagram-gallery-heading { align-items:flex-start; flex-direction:column; gap:18px; } .instagram-photo-track { gap:12px; } .instagram-photo-track > a { max-width:130px; } }
+@media(max-width:1050px) { .instagram-photo-track > a { flex-basis:170px; max-width:170px; } }
+@media(max-width:760px) { .instagram-section { padding:45px 0; } .instagram-gallery-heading { align-items:flex-start; flex-direction:column; gap:18px; } .instagram-photo-track { gap:10px; } .instagram-photo-track > a { flex-basis:118px; max-width:118px; } }
+@media(max-width:420px) { .instagram-photo-track > a { flex-basis:100px; max-width:100px; } }
