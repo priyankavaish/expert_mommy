@@ -10,8 +10,8 @@ export default function AdminDelivery() {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
   const setDays = (k, v) => setForm(f => ({ ...f, estimatedDays: { ...f.estimatedDays, [k]: v } }))
 
-  const handleSave = () => {
-    dispatch({ type: 'UPDATE_DELIVERY', payload: form })
+  const handleSave = async () => {
+    if (!await dispatch({ type: 'UPDATE_DELIVERY', payload: form })) return
     toast('Delivery settings saved!')
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)

@@ -14,7 +14,7 @@ export default function Header() {
     <header className="atelier-header"><div className="container atelier-header-inner">
       <Link to="/" aria-label="Expert Mommy home"><img className="atelier-logo" src={state.siteImages?.logo || imageSlots.logo.src} alt="Expert Mommy" /></Link>
       <nav aria-label="Main navigation" className={'atelier-nav ' + (open ? 'is-open' : '')}>
-        <NavLink to="/" end>Home</NavLink><NavLink to="/shop">Our sweaters</NavLink><Link to="/#about">Our story</Link><Link to="/#custom">Custom orders</Link>
+        <NavLink to="/" end>Home</NavLink><NavLink to="/shop">Our Products</NavLink><Link to="/#about">Our story</Link><Link to="/#custom">Custom orders</Link>
       </nav>
       <a className="header-chat" href={customUrl} target="_blank" rel="noopener noreferrer"><MessageCircle size={16}/><span>Let's chat</span></a>
       <button className="mobile-toggle" onClick={() => setOpen(!open)} aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open}>{open ? <X/> : <Menu/>}</button>

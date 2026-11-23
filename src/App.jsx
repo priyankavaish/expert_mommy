@@ -20,6 +20,7 @@ import AdminDelivery from './pages/admin/Delivery'
 
 function AdminGuard({ children }) {
   const { state } = useStore()
+  if (state.checkingAdmin) return <main className="container empty-state" role="status">Checking admin session…</main>
   if (!state.isAdminLoggedIn) return <Navigate to="/admin-login" replace />
   return children
 }
@@ -35,7 +36,7 @@ function StorePage() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Navigate to="/shop" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Footer />
@@ -46,7 +47,7 @@ function StorePage() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/admin-login" element={<Login adminMode />} />
+      <Route path="/admin-login" element={<Login />} />
       <Route
         path="/admin/*"
         element={

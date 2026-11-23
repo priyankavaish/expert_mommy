@@ -17,13 +17,12 @@ const nav = [
 ]
 
 export default function AdminLayout({ children }) {
-  const { state, dispatch } = useStore()
+  const { state, logoutAdmin } = useStore()
   const navigate = useNavigate()
   const pendingOrders = state.orders.filter(o => o.status === 'pending').length
 
-  const handleLogout = () => {
-    dispatch({ type: 'LOGOUT_ADMIN' })
-    navigate('/')
+  const handleLogout = async () => {
+    if (await logoutAdmin()) navigate('/')
   }
 
   return (

@@ -31,7 +31,7 @@ function ImageEditor({ photo, onChange, onRemove, removeLabel, disabled, upload,
         </label>
         <div className="site-image-actions">
           <input className="finput" type="url" aria-label={label + ' URL'} placeholder="https://example.com/photo.jpg" value={url} onChange={event => setUrl(event.target.value)} />
-          <button type="button" className="btn btn-outline btn-sm" disabled={disabled || !/^https?:\/\/[^\s]+$/i.test(url.trim())} onClick={() => {
+          <button type="button" className="btn btn-outline btn-sm" disabled={disabled || !/^https:\/\/[^\s]+$/i.test(url.trim())} onClick={() => {
             onChange(url.trim())
             setUrl('')
           }}>Use URL</button>
@@ -60,15 +60,14 @@ export default function SiteImages() {
   }
 
   const updateSlide = (index, changes) => setGallery(current => current.map((slide, i) => i === index ? { ...slide, ...changes } : slide))
-  const save = () => {
-    if (saveSiteImages(images, gallery)) toast('Site images saved.')
-    else toast('Browser storage is full or unavailable. Try image URLs or fewer uploads.', 'error')
+  const save = async () => {
+    if (await saveSiteImages(images, gallery)) toast('Site images published.')
   }
 
   return (
     <div className="site-image-settings">
       <h1>Site Images</h1>
-      <p>Upload photos or use image URLs, then save. Changes apply to this browser.</p>
+      <p>Upload photos or use image URLs, then save. Saved changes appear on the storefront.</p>
       <section className="adm-card">
         <h2>Handmade gallery</h2>
         <label className="frow">Add gallery photos

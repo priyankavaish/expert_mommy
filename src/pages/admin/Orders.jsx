@@ -27,16 +27,16 @@ export default function AdminOrders() {
 
   const sorted = [...filtered].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
-  const updateStatus = (orderId, status) => {
+  const updateStatus = async (orderId, status) => {
     const order = state.orders.find(o => o.id === orderId)
-    dispatch({ type: 'UPDATE_ORDER', payload: { ...order, status } })
+    if (!await dispatch({ type: 'UPDATE_ORDER', payload: { ...order, status } })) return
     if (selectedOrder?.id === orderId) setSelectedOrder(o => ({ ...o, status }))
     toast(`Order status updated to ${status}`)
   }
 
-  const updateTracking = (orderId, tracking) => {
+  const updateTracking = async (orderId, tracking) => {
     const order = state.orders.find(o => o.id === orderId)
-    dispatch({ type: 'UPDATE_ORDER', payload: { ...order, tracking } })
+    if (!await dispatch({ type: 'UPDATE_ORDER', payload: { ...order, tracking } })) return
     if (selectedOrder?.id === orderId) setSelectedOrder(o => ({ ...o, tracking }))
   }
 

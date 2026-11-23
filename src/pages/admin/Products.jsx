@@ -41,8 +41,8 @@ export default function AdminProducts() {
 
   const addImageUrl = () => {
     const url = imageUrl.trim()
-    if (!/^https?:\/\/[^\s]+$/i.test(url)) {
-      toast('Enter an image URL starting with https:// or http://', 'error')
+    if (!/^https:\/\/[^\s]+$/i.test(url)) {
+      toast('Enter an image URL starting with https://', 'error')
       return
     }
     set('images', [...form.images, url])
@@ -76,7 +76,7 @@ export default function AdminProducts() {
     }
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const { name, price, originalPrice, stock, tags, images } = form
     const rating = form.rating ?? ''
     const reviews = form.reviews ?? ''
@@ -115,16 +115,24 @@ export default function AdminProducts() {
       tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
       image: images[0],
     }
-    if (!saveProduct(product, modal === 'add')) {
-      toast('Could not save to browser storage. Try fewer photos or use image URLs.', 'error')
-      return
-    }
+    if (!await saveProduct(product, modal === 'add')) return
     toast(modal === 'add' ? 'Product added successfully!' : 'Product updated!')
     setModal(null)
   }
 
-  const handleDelete = () => {
-    dispatch({ type: 'DELETE_PRODUCT', payload: deleteId })
+  const toggleSoldOut = async product => {
+    const soldOut = product.stock <= 0
+    const { stockBeforeSoldOut, ...details } = product
+    const updated = soldOut
+      ? { ...details, stock: stockBeforeSoldOut > 0 ? stockBeforeSoldOut : 1 }
+      : { ...details, stock: 0, stockBeforeSoldOut: product.stock }
+
+    if (!await saveProduct(updated, false)) return
+    toast(soldOut ? 'Product is back in stock.' : 'Product marked sold out.')
+  }
+
+  const handleDelete = async () => {
+    if (!await dispatch({ type: 'DELETE_PRODUCT', payload: deleteId })) return
     toast('Product deleted', 'error')
     setDeleteId(null)
   }
@@ -182,7 +190,7 @@ export default function AdminProducts() {
                   </td>
                   <td>
                     <span className={`badge ${p.stock === 0 ? 'badge-red' : p.stock <= 5 ? 'badge-orange' : 'badge-green'}`}>
-                      {p.stock === 0 ? 'Out of Stock' : `${p.stock} in stock`}
+                      {p.stock <= 0 ? 'Sold Out' : `${p.stock} in stock`}
                     </span>
                   </td>
                   <td>
@@ -193,6 +201,9 @@ export default function AdminProducts() {
                   </td>
                   <td>
                     <div className="tbl-actions">
+                      <button className="btn btn-outline btn-sm" onClick={() => toggleSoldOut(p)} aria-label={(p.stock > 0 ? 'Mark sold out: ' : 'Restock: ') + p.name}>
+                        {p.stock > 0 ? 'Mark sold out' : 'Restock'}
+                      </button>
                       <button className="tbl-act edit" onClick={() => openEdit(p)} title="Edit product" aria-label={"Edit " + p.name}><Edit2 size={13} /></button>
                       <button className="tbl-act del" onClick={() => setDeleteId(p.id)} title="Delete"><Trash2 size={13} /></button>
                     </div>

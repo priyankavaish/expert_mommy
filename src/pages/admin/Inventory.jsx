@@ -23,9 +23,9 @@ export default function AdminInventory() {
 
   const openEdit = (p) => { setEditItem(p); setNewStock(String(p.stock)) }
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (isNaN(Number(newStock)) || Number(newStock) < 0) { toast('Invalid stock value', 'error'); return }
-    dispatch({ type: 'UPDATE_PRODUCT', payload: { ...editItem, stock: Number(newStock) } })
+    if (!await dispatch({ type: 'UPDATE_PRODUCT', payload: { ...editItem, stock: Number(newStock) } })) return
     toast(`Stock updated for "${editItem.name}"`)
     setEditItem(null)
   }

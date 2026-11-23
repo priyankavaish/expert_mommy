@@ -1,95 +1,66 @@
-import { createContext, useContext, useReducer, useEffect } from 'react'
-import { INITIAL_PRODUCTS, INITIAL_USERS, INITIAL_ORDERS, INITIAL_COUPONS, INITIAL_DELIVERY } from '../data/initialData'
+import { createContext, useContext, useReducer, useEffect, useRef } from 'react'
+import { INITIAL_PRODUCTS, INITIAL_DELIVERY } from '../data/initialData'
 
 const StoreContext = createContext()
+const CART_KEY = 'expertMommy_cart'
+const ADMIN_ACTIONS = new Set([
+  'ADD_PRODUCT', 'UPDATE_PRODUCT', 'DELETE_PRODUCT', 'SET_SITE_IMAGES',
+  'UPDATE_ORDER', 'DELETE_USER', 'ADD_COUPON', 'UPDATE_COUPON', 'DELETE_COUPON', 'UPDATE_DELIVERY',
+])
 
 const defaultState = {
-  products: INITIAL_PRODUCTS,
-  catalogVersion: 3,
-  cart: [],
-  wishlist: [],
-  user: null,
-  isAdminLoggedIn: false,
-  orders: INITIAL_ORDERS,
-  users: INITIAL_USERS,
-  coupons: INITIAL_COUPONS,
-  delivery: INITIAL_DELIVERY,
-  toasts: []
+  products: INITIAL_PRODUCTS, siteImages: {}, handmadeGallery: null,
+  cart: [], isAdminLoggedIn: false, checkingAdmin: true, catalogueError: false,
+  orders: [], users: [], coupons: [], delivery: INITIAL_DELIVERY, toasts: [],
 }
 
 function loadState() {
   try {
-    const saved = localStorage.getItem('expertMommy_v1')
-    if (!saved) return defaultState
-    const parsed = JSON.parse(saved)
-    // Migrate older catalogues before restoring saved product details.
-    const catalogue = parsed.catalogVersion === 3 ? parsed.products : INITIAL_PRODUCTS.map(original => {
-      const savedProduct = parsed.products?.find(product => product.id === original.id)
-      return savedProduct ? { ...original, price: savedProduct.price ?? original.price, stock: Math.min(1, savedProduct.stock ?? 1) } : original
-    })
-    const productsWithImages = catalogue.map(p => {
-      const orig = INITIAL_PRODUCTS.find(op => op.id === p.id)
-      return orig ? { ...p, image: p.image || p.images?.[0] || orig.image, images: p.images?.length ? p.images : p.image ? [p.image] : orig.images, ageGroup: p.ageGroup ?? orig.ageGroup } : p
-    })
-    const ordersWithImages = (parsed.orders || []).map(o => ({
-      ...o,
-      items: o.items.map(item => {
-        const prod = INITIAL_PRODUCTS.find(p => p.id === item.productId)
-        return { ...item, image: prod ? prod.image : '' }
-      })
-    }))
-    return {
-      ...defaultState,
-      ...parsed,
-      products: productsWithImages,
-      orders: ordersWithImages,
-      catalogVersion: 3,
-      cart: (parsed.cart || []).filter(i => productsWithImages.some(p => p.id === i.productId && p.stock > 0)).map(i => { const p = productsWithImages.find(p => p.id === i.productId); return { ...i, name: p.name, image: p.image, price: p.price, qty: 1 } }),
-      toasts: []
-    }
+    const saved = localStorage.getItem(CART_KEY)
+    const legacy = JSON.parse(localStorage.getItem('expertMommy_v1'))
+    const cart = saved ? JSON.parse(saved) : legacy?.cart
+    return { ...defaultState, cart: Array.isArray(cart) ? cart.filter(item => typeof item?.productId === 'string').map(({ productId }) => ({ productId, qty: 1 })) : [] }
   } catch {
     return defaultState
   }
 }
 
+async function api(path, method = 'GET', payload, signal) {
+  const response = await fetch('/api/' + path, {
+    method, signal, credentials: 'same-origin', cache: 'no-store',
+    ...(payload === undefined ? {} : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }),
+  })
+  const data = await response.json().catch(() => null)
+  if (!response.ok || !response.headers.get('Content-Type')?.includes('application/json')) {
+    throw Object.assign(new Error(data?.error || 'Store service is unavailable.'), { status: response.status })
+  }
+  return data
+}
+
+function getStoreData(state) {
+  const { products, siteImages, handmadeGallery, orders, users, coupons, delivery } = state
+  return { products, siteImages, handmadeGallery, orders, users, coupons, delivery }
+}
+
 function reducer(state, action) {
   switch (action.type) {
-    /* ── Cart ── */
+    case 'CATALOGUE_LOADED':
+      return { ...state, ...action.payload, catalogueError: false }
+    case 'CATALOGUE_ERROR':
+      return { ...state, catalogueError: true }
+    case 'ADMIN_LOADED':
+      return { ...state, ...action.payload, isAdminLoggedIn: true, checkingAdmin: false }
+    case 'LOGOUT_ADMIN':
+      return { ...state, checkingAdmin: false, isAdminLoggedIn: false, orders: [], users: [], coupons: [], delivery: INITIAL_DELIVERY }
     case 'ADD_TO_CART': {
-      const product = state.products.find(p => p.id === action.payload.productId)
-      if (!product || product.stock < 1) return state
-      const existing = state.cart.find(i => i.productId === action.payload.productId)
-      if (existing) return state
-      return { ...state, cart: [...state.cart, { ...action.payload, qty: 1 }] }
+      const { productId } = action.payload
+      if (!state.products.some(p => p.id === productId && p.stock > 0) || state.cart.some(i => i.productId === productId)) return state
+      return { ...state, cart: [...state.cart, { productId, qty: 1 }] }
     }
     case 'REMOVE_FROM_CART':
       return { ...state, cart: state.cart.filter(i => i.productId !== action.payload) }
-    case 'UPDATE_CART_QTY':
-      return { ...state, cart: state.cart.map(i => i.productId === action.payload.productId ? { ...i, qty: 1 } : i) }
     case 'CLEAR_CART':
       return { ...state, cart: [] }
-
-    /* ── Wishlist ── */
-    case 'TOGGLE_WISHLIST': {
-      const inWL = state.wishlist.includes(action.payload)
-      return { ...state, wishlist: inWL ? state.wishlist.filter(id => id !== action.payload) : [...state.wishlist, action.payload] }
-    }
-
-    /* ── Auth ── */
-    case 'LOGIN_USER':
-      return { ...state, user: action.payload }
-    case 'LOGOUT_USER':
-      return { ...state, user: null }
-    case 'LOGIN_ADMIN':
-      return { ...state, isAdminLoggedIn: true }
-    case 'LOGOUT_ADMIN':
-      return { ...state, isAdminLoggedIn: false }
-    case 'REGISTER_USER': {
-      const newUser = { ...action.payload, id: 'u' + Date.now(), role: 'customer', createdAt: new Date().toISOString().split('T')[0], orders: [] }
-      return { ...state, users: [...state.users, newUser], user: newUser }
-    }
-
-    /* ── Products ── */
     case 'SET_SITE_IMAGES':
       return { ...state, ...action.payload }
     case 'ADD_PRODUCT':
@@ -98,111 +69,128 @@ function reducer(state, action) {
       return { ...state, products: state.products.map(p => p.id === action.payload.id ? action.payload : p) }
     case 'DELETE_PRODUCT':
       return { ...state, products: state.products.filter(p => p.id !== action.payload) }
-
-    /* ── Orders ── */
-    case 'PLACE_ORDER': {
-      const newOrder = { ...action.payload, id: 'o' + Date.now(), createdAt: new Date().toISOString().split('T')[0], tracking: '' }
-      const updatedUsers = state.users.map(u => u.id === newOrder.userId ? { ...u, orders: [...u.orders, newOrder.id] } : u)
-      const updatedProducts = state.products.map(prod => {
-        const item = newOrder.items.find(i => i.productId === prod.id)
-        return item ? { ...prod, stock: Math.max(0, prod.stock - item.qty) } : prod
-      })
-      return { ...state, orders: [newOrder, ...state.orders], users: updatedUsers, products: updatedProducts }
-    }
     case 'UPDATE_ORDER':
       return { ...state, orders: state.orders.map(o => o.id === action.payload.id ? action.payload : o) }
-    case 'DELETE_ORDER':
-      return { ...state, orders: state.orders.filter(o => o.id !== action.payload) }
-
-    /* ── Users ── */
-    case 'UPDATE_USER':
-      return { ...state, users: state.users.map(u => u.id === action.payload.id ? action.payload : u) }
     case 'DELETE_USER':
       return { ...state, users: state.users.filter(u => u.id !== action.payload) }
-
-    /* ── Coupons ── */
     case 'ADD_COUPON':
       return { ...state, coupons: [action.payload, ...state.coupons] }
     case 'UPDATE_COUPON':
       return { ...state, coupons: state.coupons.map(c => c.id === action.payload.id ? action.payload : c) }
     case 'DELETE_COUPON':
       return { ...state, coupons: state.coupons.filter(c => c.id !== action.payload) }
-    case 'USE_COUPON':
-      return { ...state, coupons: state.coupons.map(c => c.code === action.payload ? { ...c, usedCount: c.usedCount + 1 } : c) }
-
-    /* ── Delivery ── */
     case 'UPDATE_DELIVERY':
       return { ...state, delivery: { ...state.delivery, ...action.payload } }
-
-    /* ── Toasts ── */
     case 'ADD_TOAST':
-      return { ...state, toasts: [...state.toasts, { id: Date.now(), ...action.payload }] }
+      return { ...state, toasts: [...state.toasts, { id: crypto.randomUUID(), ...action.payload }] }
     case 'REMOVE_TOAST':
       return { ...state, toasts: state.toasts.filter(t => t.id !== action.payload) }
-
     default:
       return state
   }
 }
 
 export function StoreProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, null, loadState)
+  const [state, apply] = useReducer(reducer, null, loadState)
+  const revision = useRef(null)
+  const saving = useRef(false)
 
   useEffect(() => {
-    const { toasts, ...persistable } = state
-    localStorage.setItem('expertMommy_v1', JSON.stringify(persistable))
-  }, [state])
+    const controller = new AbortController()
+    const { signal } = controller
+    async function load() {
+      try {
+        const data = await api('catalogue', 'GET', undefined, signal)
+        apply({ type: 'CATALOGUE_LOADED', payload: data })
+      } catch {
+        if (!signal.aborted) apply({ type: 'CATALOGUE_ERROR' })
+      }
+      try {
+        const snapshot = await api('admin/store', 'GET', undefined, signal)
+        revision.current = snapshot.revision
+        apply({ type: 'ADMIN_LOADED', payload: snapshot.data })
+      } catch {
+        if (!signal.aborted) apply({ type: 'LOGOUT_ADMIN' })
+      }
+    }
+    load()
+    return () => controller.abort()
+  }, [])
 
-  // Auto-remove toasts after 3s
   useEffect(() => {
-    if (state.toasts.length === 0) return
-    const timer = setTimeout(() => {
-      dispatch({ type: 'REMOVE_TOAST', payload: state.toasts[0].id })
-    }, 3000)
+    try {
+      const legacy = JSON.parse(localStorage.getItem('expertMommy_v1'))
+      if (legacy) {
+        const { products, siteImages, handmadeGallery } = legacy
+        localStorage.setItem('expertMommy_v1', JSON.stringify({ products, siteImages, handmadeGallery }))
+        localStorage.setItem('expertMommy_legacyCatalogue', JSON.stringify({ products, siteImages, handmadeGallery }))
+        localStorage.removeItem('expertMommy_v1')
+      }
+    } catch { /* The sanitized legacy backup can remain under its original key. */ }
+    try { localStorage.setItem(CART_KEY, JSON.stringify(state.cart)) } catch { /* Continue with an in-memory cart. */ }
+  }, [state.cart])
+
+  useEffect(() => {
+    if (!state.toasts.length) return
+    const timer = setTimeout(() => apply({ type: 'REMOVE_TOAST', payload: state.toasts[0].id }), 3500)
     return () => clearTimeout(timer)
   }, [state.toasts])
 
-  const cartCount = state.cart.reduce((s, i) => s + i.qty, 0)
-  const cartTotal = state.cart.reduce((s, i) => s + i.price * i.qty, 0)
+  const toast = (msg, type = 'success') => apply({ type: 'ADD_TOAST', payload: { msg, type } })
 
-  const toast = (msg, type = 'success') => dispatch({ type: 'ADD_TOAST', payload: { msg, type } })
-
-  const saveAction = action => {
-    const { toasts, ...persistable } = reducer(state, action)
-    try {
-      localStorage.setItem('expertMommy_v1', JSON.stringify(persistable))
-    } catch {
-      return false
-    }
-    dispatch(action)
-    return true
+  const loginAdmin = async credentials => {
+    await api('admin/login', 'POST', credentials)
+    const snapshot = await api('admin/store')
+    revision.current = snapshot.revision
+    apply({ type: 'ADMIN_LOADED', payload: snapshot.data })
   }
 
+  const logoutAdmin = async () => {
+    if (saving.current) return false
+    try {
+      await api('admin/logout', 'POST')
+      revision.current = null
+      apply({ type: 'LOGOUT_ADMIN' })
+      return true
+    } catch (error) {
+      toast(error.message, 'error')
+      return false
+    }
+  }
+
+  const saveAction = async action => {
+    if (saving.current) {
+      toast('A save is already in progress.', 'error')
+      return false
+    }
+    saving.current = true
+    try {
+      const data = getStoreData(reducer(state, action))
+      const saved = await api('admin/store', 'PUT', { revision: revision.current, data })
+      revision.current = saved.revision
+      apply({ type: 'ADMIN_LOADED', payload: saved.data })
+      return true
+    } catch (error) {
+      if (error.status === 401) apply({ type: 'LOGOUT_ADMIN' })
+      toast(error.message, 'error')
+      return false
+    } finally {
+      saving.current = false
+    }
+  }
+
+  const dispatch = action => ADMIN_ACTIONS.has(action.type) ? saveAction(action) : apply(action)
   const saveProduct = (product, isNew) => saveAction({ type: isNew ? 'ADD_PRODUCT' : 'UPDATE_PRODUCT', payload: product })
   const saveSiteImages = (siteImages, handmadeGallery) => saveAction({ type: 'SET_SITE_IMAGES', payload: { siteImages, handmadeGallery } })
 
-  const applyCoupon = (code) => {
-    const coupon = state.coupons.find(c => c.code.toUpperCase() === code.toUpperCase() && c.active)
-    return coupon || null
-  }
-
   return (
-    <StoreContext.Provider value={{ state, dispatch, cartCount, cartTotal, toast, applyCoupon, saveProduct, saveSiteImages }}>
+    <StoreContext.Provider value={{ state, dispatch, toast, saveProduct, saveSiteImages, loginAdmin, logoutAdmin }}>
+      {state.catalogueError && <div className="atelier-announcement" role="status">Live stock and prices are temporarily unavailable. Please confirm details on WhatsApp.</div>}
       {children}
-      <ToastContainer toasts={state.toasts} dispatch={dispatch} />
+      <div className="toast-wrap" aria-live="polite">
+        {state.toasts.map(t => <div key={t.id} className={`toast ${t.type}`}>{t.msg}</div>)}
+      </div>
     </StoreContext.Provider>
-  )
-}
-
-function ToastContainer({ toasts, dispatch }) {
-  return (
-    <div className="toast-wrap">
-      {toasts.map(t => (
-        <div key={t.id} className={`toast ${t.type}`} onClick={() => dispatch({ type: 'REMOVE_TOAST', payload: t.id })}>
-          {t.type === 'success' ? '✓' : '✕'} {t.msg}
-        </div>
-      ))}
-    </div>
   )
 }
 

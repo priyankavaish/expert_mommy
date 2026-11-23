@@ -13,13 +13,13 @@ export default function ProductCard({ product }) {
     <Link to={'/product/' + product.id} className="knit-card-photo"
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
-      <span className="piece-label">{product.stock > 0 ? 'Only 1 piece' : 'Unavailable'}</span>
+      <span className="piece-label">{product.stock > 0 ? 'Only 1 piece' : 'Sold out'}</span>
       <img src={photos[active]} alt={product.name} loading="lazy" />
       <span className="photo-count">{photos.length} photo{photos.length === 1 ? '' : 's'}</span>
     </Link>
     <div className={'knit-card-type cat-' + product.category}>{product.category === 'crochet' ? 'Hand crochet' : 'Hand knitted'} &middot; Handmade</div>
     <Link to={'/product/' + product.id} className="knit-card-title">{product.name}</Link>
     <p className="product-age">Approx. age: {ageLabel(product)}</p>
-    <div className="knit-card-bottom"><span>{money(product.price)}</span>{product.stock > 0 ? <a href={productUrl(product)} target="_blank" rel="noopener noreferrer" aria-label={'Enquire about ' + product.name}><MessageCircle size={15}/> Enquire</a> : <span className="muted">Unavailable</span>}</div>
+    <div className="knit-card-bottom"><span>{money(product.price)}</span>{product.stock > 0 ? <a href={productUrl(product)} target="_blank" rel="noopener noreferrer" aria-label={'Enquire about ' + product.name}><MessageCircle size={15}/> Enquire</a> : <span className="muted">Sold out</span>}</div>
   </article>
 }

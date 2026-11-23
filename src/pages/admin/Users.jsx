@@ -17,8 +17,8 @@ export default function AdminUsers() {
   const userOrders = (userId) => state.orders.filter(o => o.userId === userId)
   const userRevenue = (userId) => userOrders(userId).reduce((s, o) => s + o.total, 0)
 
-  const handleDelete = () => {
-    dispatch({ type: 'DELETE_USER', payload: deleteId })
+  const handleDelete = async () => {
+    if (!await dispatch({ type: 'DELETE_USER', payload: deleteId })) return
     toast('User removed', 'error')
     setDeleteId(null)
     if (selectedUser?.id === deleteId) setSelectedUser(null)

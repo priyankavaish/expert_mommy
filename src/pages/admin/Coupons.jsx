@@ -14,27 +14,27 @@ export default function AdminCoupons() {
   const openAdd = () => { setForm(EMPTY); setModal('add') }
   const openEdit = (c) => { setForm({ ...c, value: String(c.value), minOrder: String(c.minOrder), maxUses: String(c.maxUses) }); setModal('edit') }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.code || !form.value) { toast('Fill required fields', 'error'); return }
     const coupon = { ...form, value: Number(form.value), minOrder: Number(form.minOrder) || 0, maxUses: Number(form.maxUses) || 100, usedCount: form.usedCount || 0 }
     if (modal === 'add') {
-      dispatch({ type: 'ADD_COUPON', payload: { ...coupon, id: 'c' + Date.now() } })
+      if (!await dispatch({ type: 'ADD_COUPON', payload: { ...coupon, id: 'c' + Date.now() } })) return
       toast('Coupon created!')
     } else {
-      dispatch({ type: 'UPDATE_COUPON', payload: coupon })
+      if (!await dispatch({ type: 'UPDATE_COUPON', payload: coupon })) return
       toast('Coupon updated!')
     }
     setModal(null)
   }
 
-  const handleDelete = () => {
-    dispatch({ type: 'DELETE_COUPON', payload: deleteId })
+  const handleDelete = async () => {
+    if (!await dispatch({ type: 'DELETE_COUPON', payload: deleteId })) return
     toast('Coupon deleted', 'error')
     setDeleteId(null)
   }
 
-  const toggleActive = (coupon) => {
-    dispatch({ type: 'UPDATE_COUPON', payload: { ...coupon, active: !coupon.active } })
+  const toggleActive = async (coupon) => {
+    if (!await dispatch({ type: 'UPDATE_COUPON', payload: { ...coupon, active: !coupon.active } })) return
     toast(`Coupon ${coupon.active ? 'deactivated' : 'activated'}`)
   }
 
