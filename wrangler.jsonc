@@ -1,0 +1,15 @@
+{
+  "name": "expert-mommy",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-11-23",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "expert-mommy-production",
+      "database_id": "fff77cc1-2829-45b5-8b5a-10a9c26b0d6c"
+    }
+  ],
+  "vars": {
+    "ADMIN_EMAIL": "admin@expertmommy.com"
+  }
+}

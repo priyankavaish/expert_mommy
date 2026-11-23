@@ -4,11 +4,14 @@ Cloudflare Pages serves this Vite storefront and its same-origin API. D1 stores 
 
 ## Publish
 
-1. Create a Cloudflare Pages Git project for `priyankavaish/expert_mommy`. Set the production branch to `main`, build command to `npm run build`, and output directory to `dist`.
-2. Create a D1 database and run the SQL in `db/schema.sql` on it. Bind it to the Pages project as `DB`. Use a separate database for Preview if enabling Preview access.
-3. In the project's Production variables and secrets, set `ADMIN_EMAIL` and an encrypted `ADMIN_PASSWORD`. Generate a unique password of at least 16 characters with a password manager. Redeploy after setting bindings and secrets.
-4. On the Pages preview URL, verify the storefront, admin sign-in, and a shared catalogue edit from a second browser. Then add `expertmommy.in` as a custom domain and verify DNS and HTTPS. Confirm existing email records before changing nameservers.
-5. Sign in at `/admin-login` to manage photos, stock and prices. The bundled catalogue is the starting point until the first admin save.
+The Cloudflare Pages project is `expert-mommy` and the production branch is `production/cloudflare`. The Wrangler configuration binds the production D1 database as `DB`. Use an authorized account before running deployment commands.
+
+1. Run `npm ci`, `npm test`, and `npm run build`.
+2. Run `npx wrangler pages deploy dist --project-name expert-mommy --branch production/cloudflare`. This project uses Direct Upload, so a Git push alone does not deploy it.
+3. For the initial admin setup, add an encrypted Production secret named `ADMIN_PASSWORD` under **Settings → Variables and Secrets** and deploy again. Use a unique password of at least 16 characters. Sign in at `/admin-login` with the email configured in `wrangler.jsonc`.
+4. Verify the admin login and a catalogue change from a second browser. Then add `expertmommy.in` under **Custom domains** and complete nameserver setup at the registrar. Preserve any existing email DNS records before changing nameservers.
+
+For a new database, apply `db/schema.sql` with `npx wrangler d1 execute DB --remote --file db/schema.sql` before deploying.
 
 The deployed site uses a new shared database. Earlier product edits and images saved in a browser must be reapplied to the deployed catalogue. On the first run, the storefront retains the old browser's cart IDs, saves a separate local backup of the previous catalogue and images, and removes the legacy browser login data.
 
