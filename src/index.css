@@ -1039,7 +1039,7 @@ ul, ol { list-style: none; }
 }
 .adm-table tr:last-child td { border-bottom: none; }
 .adm-table tr:hover td { background: #FAFBFC; }
-.tbl-prod-img { width: 44px; height: 44px; object-fit: cover; border-radius: var(--radius-sm); background: var(--cream); }
+.tbl-prod-img { width: 64px; height: 64px; flex-shrink: 0; object-fit: cover; border-radius: var(--radius-sm); background: var(--cream); }
 .tbl-actions { display: flex; gap: 5px; }
 .tbl-act {
   width: 30px;
@@ -1286,8 +1286,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .collection-banner p { font-size:12px; color:var(--text-medium); margin-top:20px; line-height:1.9; }
 .collection-banner-grid { position:relative; z-index:1; display:grid; grid-template-columns:1.1fr 0.9fr; align-items:center; gap:30px; }
 .collection-banner-art { position:relative; display:grid; place-items:center; height:340px; overflow:hidden; }
-.collection-flower { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#e6d1c9; font-size:300px; line-height:1.4; pointer-events:none; z-index:0; }
-.collection-banner-art img { position:relative; z-index:1; height:100%; max-width:100%; object-fit:contain; filter:drop-shadow(0 18px 24px #33271d26); }
+.collection-banner-art img { position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 18px 24px #33271d26); }
 .collection-toolbar { display:flex; align-items:center; justify-content:space-between; gap:20px; padding-bottom:22px; border-bottom:1px solid #e5dbce; }
 .collection-tabs { display:flex; gap:8px; flex-wrap:wrap; }
 .collection-tabs a { font-size:11px; padding:9px 15px; border:1px solid #d9c9bb; border-radius:20px; transition:var(--transition); }
@@ -1379,15 +1378,16 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .custom-panel .btn { max-width:100%; white-space:normal; text-align:center; }
 
 
-/* The new HEIC-derived cutouts retain real alpha; product surfaces stay clear. */
+/* Neutral background for transparent product photos. */
 .knit-card-photo,
 .knit-card:nth-child(4n+2) .knit-card-photo,
 .knit-card:nth-child(4n+3) .knit-card-photo,
 .knit-card:nth-child(4n+4) .knit-card-photo,
 .detail-photo,
-.detail-thumbnails button,
+.detail-thumbnails button { background: #f0f0f0; }
 .enquiry-item > img { background: transparent; }
 .knit-card-photo img, .detail-photo > img { filter: none; }
+@media (prefers-reduced-motion: reduce) { .photo-autoplay { display: none; } }
 
 
 /* The maker behind Expert Mommy */
@@ -1472,3 +1472,28 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 @media(max-width:1050px) { .instagram-photo-track > a { flex-basis:170px; max-width:170px; } }
 @media(max-width:760px) { .instagram-section { padding:45px 0; } .instagram-gallery-heading { align-items:flex-start; flex-direction:column; gap:18px; } .instagram-photo-track { gap:10px; } .instagram-photo-track > a { flex-basis:118px; max-width:118px; } }
 @media(max-width:420px) { .instagram-photo-track > a { flex-basis:100px; max-width:100px; } }
+
+.handmade-gallery { background: #f2e9df; padding: clamp(42px, 6vw, 84px) 0; }
+.handmade-gallery-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); align-items: center; gap: clamp(28px, 6vw, 88px); }
+.handmade-gallery-copy h2 { font-size: clamp(34px, 4vw, 56px); }
+.handmade-gallery-copy p { max-width: 48ch; margin: 16px 0; color: var(--text-medium); }
+.handmade-gallery-copy .btn { margin-top: 8px; }
+.handmade-gallery-carousel { width: min(100%, 440px); justify-self: center; }
+.handmade-gallery-carousel figure { margin: 0; }
+.handmade-gallery-carousel img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: contain; background: #f0f0f0; border-radius: var(--radius-sm); }
+.handmade-gallery-carousel figcaption { margin-top: 10px; text-align: center; font-family: var(--font-display); font-size: 20px; }
+.handmade-gallery-controls { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+@media (max-width: 700px) {
+  .handmade-gallery-grid { grid-template-columns: 1fr; }
+}
+
+.site-image-settings { display: grid; gap: 16px; }
+.site-image-settings > .btn { justify-self: start; }
+.site-image-settings .adm-card { padding: 20px; }
+.site-image-settings h2 { margin-bottom: 16px; font-size: 1.1rem; }
+.site-image-editor { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-light); }
+.site-image-editor > img { width: 88px; height: 88px; object-fit: contain; background: #f0f0f0; border-radius: 6px; }
+.site-image-editor > div { flex: 1 1 230px; min-width: 0; }
+.site-image-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.site-image-actions input { flex: 1 1 180px; }
+.site-gallery-slide { padding: 4px 0 12px; }

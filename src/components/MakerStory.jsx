@@ -1,9 +1,11 @@
 import { Instagram, Youtube } from 'lucide-react'
-import pushpaRani from '../assets/maker/pushpa-rani-portrait.png'
+import { imageSlots } from '../data/siteImages'
+import { useStore } from '../context/StoreContext'
 import { SOCIAL_LINKS } from '../data/social'
 import useReveal from '../hooks/useReveal'
 
 export default function MakerStory() {
+  const { state } = useStore()
   useReveal()
   return (
     <section className="maker-story reveal" id="about" aria-labelledby="maker-heading">
@@ -11,7 +13,7 @@ export default function MakerStory() {
         <figure className="maker-portrait">
           <div className="maker-photo-frame">
             <img
-              src={pushpaRani}
+              src={state.siteImages?.maker || imageSlots.maker.src}
               alt="Pushpa Rani, the maker behind Expert Mommy, wearing a floral sari"
               loading="lazy"
               width="1089"

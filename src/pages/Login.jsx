@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Heart } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
-import { logoImg } from '../assets/images'
+import { imageSlots } from '../data/siteImages'
 
 const ADMIN_EMAIL = 'admin@expertmommy.com'
 const ADMIN_PASS = 'admin123'
@@ -53,7 +53,7 @@ export default function Login({ adminMode = false }) {
         {/* Logo */}
         <div className="login-logo-wrap">
           <img
-            src={logoImg}
+            src={state.siteImages?.logo || imageSlots.logo.src}
             alt="Expert Mommy"
             style={{ height: 72, width: 'auto', objectFit: 'contain', margin: '0 auto', display: 'block' }}
           />

@@ -10,6 +10,7 @@ import Checkout from './pages/Checkout'
 import Login from './pages/Login'
 import AdminLayout from './pages/admin/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'
+import SiteImages from './pages/admin/SiteImages'
 import AdminProducts from './pages/admin/Products'
 import AdminOrders from './pages/admin/Orders'
 import AdminUsers from './pages/admin/Users'
@@ -54,6 +55,7 @@ export default function App() {
               <Routes>
                 <Route index element={<Dashboard />} />
                 <Route path="products" element={<AdminProducts />} />
+                <Route path="site-images" element={<SiteImages />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="coupons" element={<AdminCoupons />} />

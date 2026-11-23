@@ -1,13 +1,21 @@
+import { useState } from 'react'
+import usePhotoRotation from '../hooks/usePhotoRotation'
 import { ageLabel } from '../data/ages'
 import { Link } from 'react-router-dom'
 import { MessageCircle } from 'lucide-react'
 import { money, productUrl } from '../data/whatsapp'
 export default function ProductCard({ product }) {
+  const photos = product.images?.length ? product.images : [product.image]
+  const [hovered, setHovered] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const [active] = usePhotoRotation(photos.length, hovered || focused)
   return <article className="knit-card">
-    <Link to={'/product/' + product.id} className="knit-card-photo">
+    <Link to={'/product/' + product.id} className="knit-card-photo"
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
       <span className="piece-label">{product.stock > 0 ? 'Only 1 piece' : 'Unavailable'}</span>
-      <img src={product.image} alt={product.name} loading="lazy" />
-      <span className="photo-count">{(product.images || [product.image]).length} photo{product.images?.length === 1 ? '' : 's'}</span>
+      <img src={photos[active]} alt={product.name} loading="lazy" />
+      <span className="photo-count">{photos.length} photo{photos.length === 1 ? '' : 's'}</span>
     </Link>
     <div className={'knit-card-type cat-' + product.category}>{product.category === 'crochet' ? 'Hand crochet' : 'Hand knitted'} &middot; Handmade</div>
     <Link to={'/product/' + product.id} className="knit-card-title">{product.name}</Link>

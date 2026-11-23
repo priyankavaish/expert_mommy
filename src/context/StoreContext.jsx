@@ -22,14 +22,14 @@ function loadState() {
     const saved = localStorage.getItem('expertMommy_v1')
     if (!saved) return defaultState
     const parsed = JSON.parse(saved)
-    // Re-attach images (they are module references, not serializable)
+    // Migrate older catalogues before restoring saved product details.
     const catalogue = parsed.catalogVersion === 3 ? parsed.products : INITIAL_PRODUCTS.map(original => {
       const savedProduct = parsed.products?.find(product => product.id === original.id)
       return savedProduct ? { ...original, price: savedProduct.price ?? original.price, stock: Math.min(1, savedProduct.stock ?? 1) } : original
     })
     const productsWithImages = catalogue.map(p => {
       const orig = INITIAL_PRODUCTS.find(op => op.id === p.id)
-      return orig ? { ...p, image: orig.image, images: orig.images, ageGroup: p.ageGroup || orig.ageGroup, stock: Math.min(1, p.stock) } : p
+      return orig ? { ...p, image: p.image || p.images?.[0] || orig.image, images: p.images?.length ? p.images : p.image ? [p.image] : orig.images, ageGroup: p.ageGroup ?? orig.ageGroup } : p
     })
     const ordersWithImages = (parsed.orders || []).map(o => ({
       ...o,
@@ -90,6 +90,8 @@ function reducer(state, action) {
     }
 
     /* ── Products ── */
+    case 'SET_SITE_IMAGES':
+      return { ...state, ...action.payload }
     case 'ADD_PRODUCT':
       return { ...state, products: [action.payload, ...state.products] }
     case 'UPDATE_PRODUCT':
@@ -165,13 +167,27 @@ export function StoreProvider({ children }) {
 
   const toast = (msg, type = 'success') => dispatch({ type: 'ADD_TOAST', payload: { msg, type } })
 
+  const saveAction = action => {
+    const { toasts, ...persistable } = reducer(state, action)
+    try {
+      localStorage.setItem('expertMommy_v1', JSON.stringify(persistable))
+    } catch {
+      return false
+    }
+    dispatch(action)
+    return true
+  }
+
+  const saveProduct = (product, isNew) => saveAction({ type: isNew ? 'ADD_PRODUCT' : 'UPDATE_PRODUCT', payload: product })
+  const saveSiteImages = (siteImages, handmadeGallery) => saveAction({ type: 'SET_SITE_IMAGES', payload: { siteImages, handmadeGallery } })
+
   const applyCoupon = (code) => {
     const coupon = state.coupons.find(c => c.code.toUpperCase() === code.toUpperCase() && c.active)
     return coupon || null
   }
 
   return (
-    <StoreContext.Provider value={{ state, dispatch, cartCount, cartTotal, toast, applyCoupon }}>
+    <StoreContext.Provider value={{ state, dispatch, cartCount, cartTotal, toast, applyCoupon, saveProduct, saveSiteImages }}>
       {children}
       <ToastContainer toasts={state.toasts} dispatch={dispatch} />
     </StoreContext.Provider>

@@ -2,14 +2,17 @@ import { useState } from 'react'
 import { Search, Plus, Edit2, Trash2, X } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
 import { CATEGORIES } from '../../data/initialData'
+import { AGE_LABELS } from '../../data/ages'
 
-const EMPTY = { name: '', category: 'baby', price: '', originalPrice: '', stock: '', sku: '', description: '', featured: false, newArrival: false }
+const EMPTY = { name: '', category: CATEGORIES[0].id, ageGroup: '', tags: '', images: [], rating: '', reviews: '', price: '', originalPrice: '', stock: '', sku: '', description: '', featured: false, newArrival: false }
 
 export default function AdminProducts() {
-  const { state, dispatch, toast } = useStore()
+  const { state, dispatch, saveProduct, toast } = useStore()
   const [search, setSearch] = useState('')
   const [modal, setModal] = useState(null)
   const [form, setForm] = useState(EMPTY)
+  const [imageUrl, setImageUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
   const [deleteId, setDeleteId] = useState(null)
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -19,28 +22,104 @@ export default function AdminProducts() {
     p.sku?.toLowerCase().includes(search.toLowerCase())
   )
 
-  const openAdd = () => { setForm(EMPTY); setModal('add') }
-  const openEdit = (p) => { setForm({ ...p, price: String(p.price), originalPrice: String(p.originalPrice), stock: String(p.stock) }); setModal('edit') }
+  const openAdd = () => {
+    setForm(EMPTY)
+    setImageUrl('')
+    setModal('add')
+  }
+
+  const openEdit = p => {
+    const images = [...new Set([p.image, ...(p.images || [])].filter(Boolean))]
+    setForm({
+      ...EMPTY, ...p, images,
+      originalPrice: p.originalPrice ?? '',
+      tags: (p.tags || []).join(', '),
+    })
+    setImageUrl('')
+    setModal('edit')
+  }
+
+  const addImageUrl = () => {
+    const url = imageUrl.trim()
+    if (!/^https?:\/\/[^\s]+$/i.test(url)) {
+      toast('Enter an image URL starting with https:// or http://', 'error')
+      return
+    }
+    set('images', [...form.images, url])
+    setImageUrl('')
+  }
+
+  const uploadImages = async event => {
+    const files = Array.from(event.target.files)
+    event.target.value = ''
+    if (!files.length) return
+    setUploading(true)
+    try {
+      const images = await Promise.all(files.map(async file => {
+        const bitmap = await createImageBitmap(file)
+        try {
+          const scale = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height))
+          const canvas = document.createElement('canvas')
+          canvas.width = Math.max(1, Math.round(bitmap.width * scale))
+          canvas.height = Math.max(1, Math.round(bitmap.height * scale))
+          canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+          return canvas.toDataURL('image/webp', 0.82)
+        } finally {
+          bitmap.close()
+        }
+      }))
+      setForm(current => ({ ...current, images: [...current.images, ...images] }))
+    } catch {
+      toast('Could not open the selected images. Try JPG, PNG, or WebP.', 'error')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSave = () => {
-    if (!form.name || !form.price || !form.stock) { toast('Fill required fields', 'error'); return }
+    const { name, price, originalPrice, stock, tags, images } = form
+    const rating = form.rating ?? ''
+    const reviews = form.reviews ?? ''
+    if (rating !== '' && (!Number.isFinite(Number(rating)) || Number(rating) < 0 || Number(rating) > 5)) {
+      toast('Rating must be between 0 and 5.', 'error')
+      return
+    }
+    if (reviews !== '' && (!Number.isInteger(Number(reviews)) || Number(reviews) < 0)) {
+      toast('Review count must be a non-negative whole number.', 'error')
+      return
+    }
+    if (!name.trim() || price === '' || !Number.isFinite(Number(price)) || Number(price) < 0 ||
+        !Number.isFinite(Number(originalPrice)) || Number(originalPrice) < 0 ||
+        stock === '' || !Number.isInteger(Number(stock)) || Number(stock) < 0) {
+      toast('Enter a product name, valid prices, and a whole number for stock.', 'error')
+      return
+    }
+    if (imageUrl.trim()) {
+      toast('Click Add URL to include the image before saving.', 'error')
+      return
+    }
+    if (!images.length) {
+      toast('Add at least one product image.', 'error')
+      return
+    }
+
     const product = {
       ...form,
-      price: Number(form.price),
-      originalPrice: Number(form.originalPrice) || Number(form.price),
-      stock: Number(form.stock),
-      rating: form.rating || 4.5,
-      reviews: form.reviews || 0,
-      tags: form.tags || [form.category],
-      image: state.products.find(p => p.category === form.category)?.image || state.products[0]?.image
+      id: form.id || 'p' + Date.now(),
+      name: name.trim(),
+      price: Number(price),
+      originalPrice: originalPrice === '' ? Number(price) : Number(originalPrice),
+      stock: Number(stock),
+      rating: rating === '' ? undefined : Number(rating),
+      reviews: reviews === '' ? undefined : Number(reviews),
+      tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
+      image: images[0],
     }
-    if (modal === 'add') {
-      dispatch({ type: 'ADD_PRODUCT', payload: { ...product, id: 'p' + Date.now() } })
-      toast('Product added successfully!')
-    } else {
-      dispatch({ type: 'UPDATE_PRODUCT', payload: product })
-      toast('Product updated!')
+    if (!saveProduct(product, modal === 'add')) {
+      toast('Could not save to browser storage. Try fewer photos or use image URLs.', 'error')
+      return
     }
+    toast(modal === 'add' ? 'Product added successfully!' : 'Product updated!')
     setModal(null)
   }
 
@@ -91,15 +170,15 @@ export default function AdminProducts() {
                       <img src={p.image} alt={p.name} className="tbl-prod-img" />
                       <div>
                         <div style={{ fontWeight: 600, fontSize: 13.5 }}>{p.name}</div>
-                        <div style={{ fontSize: 11.5, color: 'var(--text-light)' }}>★ {p.rating} ({p.reviews} reviews)</div>
+                        <div style={{ fontSize: 11.5, color: 'var(--text-light)' }}>&#9733; {p.rating ?? '–'} ({p.reviews ?? 0} reviews)</div>
                       </div>
                     </div>
                   </td>
                   <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{p.sku}</td>
                   <td>{catName}</td>
                   <td>
-                    <div style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{p.price.toLocaleString()}</div>
-                    {p.originalPrice > p.price && <div style={{ fontSize: 11.5, color: 'var(--text-light)', textDecoration: 'line-through' }}>₹{p.originalPrice.toLocaleString()}</div>}
+                    <div style={{ fontWeight: 700, color: 'var(--primary)' }}>&#8377;{p.price.toLocaleString()}</div>
+                    {p.originalPrice > p.price && <div style={{ fontSize: 11.5, color: 'var(--text-light)', textDecoration: 'line-through' }}>&#8377;{p.originalPrice.toLocaleString()}</div>}
                   </td>
                   <td>
                     <span className={`badge ${p.stock === 0 ? 'badge-red' : p.stock <= 5 ? 'badge-orange' : 'badge-green'}`}>
@@ -114,7 +193,7 @@ export default function AdminProducts() {
                   </td>
                   <td>
                     <div className="tbl-actions">
-                      <button className="tbl-act edit" onClick={() => openEdit(p)} title="Edit"><Edit2 size={13} /></button>
+                      <button className="tbl-act edit" onClick={() => openEdit(p)} title="Edit product" aria-label={"Edit " + p.name}><Edit2 size={13} /></button>
                       <button className="tbl-act del" onClick={() => setDeleteId(p.id)} title="Delete"><Trash2 size={13} /></button>
                     </div>
                   </td>
@@ -130,11 +209,11 @@ export default function AdminProducts() {
 
       {/* Add/Edit Modal */}
       {(modal === 'add' || modal === 'edit') && (
-        <div className="modal-overlay" onClick={() => setModal(null)}>
+        <div className="modal-overlay" onClick={() => !uploading && setModal(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-hdr">
               <div className="modal-ttl">{modal === 'add' ? 'Add New Product' : 'Edit Product'}</div>
-              <button className="modal-close" onClick={() => setModal(null)}><X size={16} /></button>
+              <button className="modal-close" onClick={() => !uploading && setModal(null)}><X size={16} /></button>
             </div>
             <div className="fgrid">
               <div className="frow">
@@ -152,17 +231,52 @@ export default function AdminProducts() {
                 </select>
               </div>
               <div className="frow">
-                <label>Sale Price (₹) *</label>
-                <input className="finput" type="number" value={form.price} onChange={e => set('price', e.target.value)} placeholder="699" />
+                <label>Sale Price (&#8377;) *</label>
+                <input className="finput" type="number" min="0" step="0.01" value={form.price} onChange={e => set('price', e.target.value)} placeholder="699" />
               </div>
               <div className="frow">
-                <label>Original Price (₹)</label>
-                <input className="finput" type="number" value={form.originalPrice} onChange={e => set('originalPrice', e.target.value)} placeholder="899" />
+                <label>Original Price (&#8377;)</label>
+                <input className="finput" type="number" min="0" step="0.01" value={form.originalPrice} onChange={e => set('originalPrice', e.target.value)} placeholder="899" />
               </div>
               <div className="frow">
                 <label>Stock Qty *</label>
-                <input className="finput" type="number" value={form.stock} onChange={e => set('stock', e.target.value)} placeholder="10" />
+                <input className="finput" type="number" min="0" value={form.stock} onChange={e => set('stock', e.target.value)} placeholder="10" />
               </div>
+            </div>
+            <div className="fgrid">
+              <label className="frow">Age Group
+                <select className="fselect finput" value={form.ageGroup} onChange={e => set('ageGroup', e.target.value)}>
+                  <option value="">Unspecified</option>
+                  {Object.entries(AGE_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+                </select>
+              </label>
+              <label className="frow">Tags
+                <input className="finput" value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="winter, sweater" />
+              </label>
+              <label className="frow">Rating
+                <input className="finput" type="number" min="0" max="5" step="0.1" value={form.rating ?? ''} onChange={e => set('rating', e.target.value)} />
+              </label>
+              <label className="frow">Review Count
+                <input className="finput" type="number" min="0" value={form.reviews ?? ''} onChange={e => set('reviews', e.target.value)} />
+              </label>
+            </div>
+            <div className="frow">
+              <label htmlFor="product-photos">Product Photos *</label>
+              <input id="product-photos" className="finput" type="file" accept="image/*" multiple disabled={uploading} onChange={uploadImages} />
+              {uploading && <span role="status">Preparing photos...</span>}
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <input className="finput" aria-label="Image URL" placeholder="https://example.com/photo.jpg" value={imageUrl} onChange={e => setImageUrl(e.target.value)} disabled={uploading} />
+                <button className="btn btn-ghost btn-sm" disabled={uploading || !imageUrl.trim()} onClick={addImageUrl}>Add URL</button>
+              </div>
+              {form.images.map((image, index) => (
+                <div key={index} style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                  <img className="tbl-prod-img" src={image} alt={'Product photo ' + (index + 1)} />
+                  {index === 0 ? <span>Main photo</span> : (
+                    <button className="btn btn-ghost btn-sm" disabled={uploading} onClick={() => set('images', [image, ...form.images.filter((_, i) => i !== index)])}>Make main</button>
+                  )}
+                  <button className="btn btn-ghost btn-sm" disabled={uploading} aria-label={'Remove photo ' + (index + 1)} onClick={() => set('images', form.images.filter((_, i) => i !== index))}>Remove</button>
+                </div>
+              ))}
             </div>
             <div className="frow">
               <label>Description</label>
@@ -177,8 +291,8 @@ export default function AdminProducts() {
               </label>
             </div>
             <div className="modal-actions">
-              <button className="btn btn-ghost" onClick={() => setModal(null)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSave}>{modal === 'add' ? 'Add Product' : 'Save Changes'}</button>
+              <button className="btn btn-ghost" onClick={() => !uploading && setModal(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleSave} disabled={uploading}>{modal === 'add' ? 'Add Product' : 'Save Changes'}</button>
             </div>
           </div>
         </div>

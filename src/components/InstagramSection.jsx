@@ -1,4 +1,5 @@
 import { Instagram, Play } from 'lucide-react'
+import { useStore } from '../context/StoreContext'
 import useReveal from '../hooks/useReveal'
 import { SOCIAL_LINKS } from '../data/social'
 import photo1 from '../assets/instagram/post-1.jpg'
@@ -22,6 +23,11 @@ const photos = [
 ]
 
 export default function InstagramSection() {
+  const { state } = useStore()
+  const displayedPhotos = photos.map((photo, i) => {
+    const image = state.siteImages?.['instagram' + i]
+    return image ? { image, alt: 'Expert Mommy Instagram photo ' + (i + 1), type: 'photo' } : photo
+  })
   const instagram = SOCIAL_LINKS.find(social => social.id === 'instagram')
   useReveal()
   return (
@@ -33,7 +39,7 @@ export default function InstagramSection() {
         </div>
         <div className="instagram-photo-grid">
           <div className="instagram-photo-track">
-            {[...photos, ...photos].map((photo, i) => <a key={photo.image + i} href={instagram.url} target="_blank" rel="noopener noreferrer" aria-label={photo.alt + ' - explore on Instagram'}><img src={photo.image} alt={photo.alt} loading="lazy" width="540" height="540" /><span className="instagram-tile-icon">{photo.type === 'reel' ? <Play size={17} /> : <Instagram size={17} />}</span><span className="instagram-tile-hover">Explore on Instagram</span></a>)}
+            {[...displayedPhotos, ...displayedPhotos].map((photo, i) => <a key={photo.image + i} href={instagram.url} target="_blank" rel="noopener noreferrer" aria-label={photo.alt + ' - explore on Instagram'}><img src={photo.image} alt={photo.alt} loading="lazy" width="540" height="540" /><span className="instagram-tile-icon">{photo.type === 'reel' ? <Play size={17} /> : <Instagram size={17} />}</span><span className="instagram-tile-hover">Explore on Instagram</span></a>)}
           </div>
         </div>
         <a className="instagram-gallery-footer" href={instagram.url} target="_blank" rel="noopener noreferrer">See more on Instagram</a>
