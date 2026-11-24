@@ -4,10 +4,10 @@ Cloudflare Pages serves this Vite storefront and its same-origin API. D1 stores 
 
 ## Publish
 
-The Cloudflare Pages project is `expert-mommy` and the production branch is `production/cloudflare`. The Wrangler configuration binds the production D1 database as `DB`. Use an authorized account before running deployment commands.
+The Cloudflare Pages project is `expert-mommy-shop` and the production branch is `production/cloudflare`. The Wrangler configuration binds the production D1 database as `DB`. Use an authorized account before running deployment commands.
 
 1. Run `npm ci`, `npm test`, and `npm run build`.
-2. Run `npx wrangler pages deploy dist --project-name expert-mommy --branch production/cloudflare`. This project uses Direct Upload, so a Git push alone does not deploy it.
+2. Run `npx wrangler pages deploy dist --project-name expert-mommy-shop --branch production/cloudflare`. This project uses Direct Upload, so a Git push alone does not deploy it.
 3. For the initial admin setup, add an encrypted Production secret named `ADMIN_PASSWORD` under **Settings → Variables and Secrets** and deploy again. Use a unique password of at least 16 characters. Sign in at `/admin-login` with the email configured in `wrangler.jsonc`.
 4. Verify the admin login and a catalogue change from a second browser. Then add `expertmommy.in` under **Custom domains** and complete nameserver setup at the registrar. Preserve any existing email DNS records before changing nameservers.
 

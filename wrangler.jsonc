@@ -1,12 +1,12 @@
 {
-  "name": "expert-mommy",
+  "name": "expert-mommy-shop",
   "pages_build_output_dir": "./dist",
   "compatibility_date": "2026-11-23",
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "expert-mommy-production",
-      "database_id": "fff77cc1-2829-45b5-8b5a-10a9c26b0d6c"
+      "database_id": "da3654b8-0f77-4523-a97d-3687d125eb76"
     }
   ],
   "vars": {
