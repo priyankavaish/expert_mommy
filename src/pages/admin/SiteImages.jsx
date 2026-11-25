@@ -150,13 +150,13 @@ export default function SiteImages() {
         {section.images.length > 0 && (
           <div className="site-content-group">
             <h3>Photos</h3>
-            {section.id === 'shop' && <p className="site-content-hint">The banner fills the full screen width. A wide photo (about 1920 × 700) looks best.</p>}
+            {section.id === 'shop' && <p className="site-content-hint">Upload a wide image to show a banner on the Products page.</p>}
             {section.images.map(key => {
               const slot = imageSlots[key]
               return (
                 <ImageEditor key={key} photo={{ src: images[key] || slot.src }} label={slot.label} disabled={uploading} upload={upload}
                   onChange={src => editImages(current => ({ ...current, [key]: src }))}
-                  removeLabel="Restore default" onRemove={images[key] ? () => editImages(({ [key]: removed, ...current }) => current) : undefined} />
+                  removeLabel={slot.src ? "Restore default" : "Remove banner"} onRemove={images[key] ? () => editImages(({ [key]: removed, ...current }) => current) : undefined} />
               )
             })}
           </div>

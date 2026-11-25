@@ -1363,6 +1363,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
  .custom-panel { grid-template-columns:1fr; padding:28px 22px; gap:10px; }.custom-art { min-height:270px; }.custom-art img { height:220px; }.custom-art:before { width:70%; }.custom-art .handwritten { bottom:5px; font-size:25px; }
  .how-section { padding-bottom:45px; }.how-grid { grid-template-columns:1fr; gap:20px; margin-top:25px; }.how-grid > div { padding-top:12px; }.how-grid h3 { margin:7px 0; }.how-grid > div > span { font-size:24px; }
  .atelier-footer { padding-top:35px; }.atelier-footer-grid { gap:30px 20px; }.atelier-footer-grid > div:first-child { grid-column:1/-1; }.atelier-footer-grid > div:last-child { grid-column:1/-1; }.atelier-footer-bottom { flex-wrap:wrap; gap:12px; }
+ .collection-banner-art { height:auto; }
+ .collection-banner-art img { height:auto; }
  .collection-banner { padding:0 0 36px; }.collection-banner h1 { font-size:38px; }.collection-banner-copy { padding-top:28px; }.collection-flower { display:none; }
  .collection-controls { width:100%; flex-wrap:wrap; }.collection-search { flex:1; }.collection-search input { width:100%; }.collection-tabs a { padding:8px 11px; }
  .collection-count span { display:block; margin-top:4px; }.collection-custom { flex-direction:column; padding:25px; align-items:flex-start; gap:15px; margin-top:40px; }
@@ -1534,7 +1536,8 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .policy-page ul { padding-left: 20px; list-style: disc; }
 .policy-page a { color: var(--primary); text-decoration: underline; }
 .policy-links { display: flex; flex-wrap: wrap; gap: 18px; padding-top: 24px; border-top: 1px solid #e5dbce; }
-.atelier-footer-bottom { align-items: center; }
+.atelier-footer-bottom { align-items: center; flex-wrap: wrap; }
+.footer-credit { flex-basis: 100%; text-align: center; }
 .footer-policies { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; font-size: 11px; }
 .footer-policies a:hover { color: var(--primary); }
 .product-slideshow-toggle { margin-top: 18px; }
