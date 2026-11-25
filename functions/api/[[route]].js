@@ -49,7 +49,9 @@ function validateStore(data) {
       !(data.handmadeGallery === null || (Array.isArray(data.handmadeGallery) && data.handmadeGallery.length <= 50 &&
         data.handmadeGallery.every(photo => isRecord(photo) && isPhoto(photo.src) && isText(photo.label, 250)))) ||
       !(data.siteContent === undefined || (isRecord(data.siteContent) && Object.keys(data.siteContent).length <= 300 &&
-        Object.entries(data.siteContent).every(([key, value]) => /^[a-z0-9]+\.[a-z0-9]+$/i.test(key) && isText(value, 3000))))) return false
+        Object.entries(data.siteContent).every(([key, value]) => /^[a-z0-9]+\.[a-z0-9]+$/i.test(key) && isText(value, 3000)))) ||
+      !(data.categories === undefined || (Array.isArray(data.categories) && data.categories.length <= 100 &&
+        data.categories.every(c => isRecord(c) && isText(c.id, 60) && /^[a-z0-9-]+$/.test(c.id) && isText(c.name, 80) && c.name.trim())))) return false
   const ids = new Set(data.products.map(product => product?.id))
   return ids.size === data.products.length && data.products.every(product => isRecord(product) &&
     isText(product.id, 80) && product.id.length > 0 && isText(product.name, 250) && product.name.trim() &&
@@ -186,7 +188,7 @@ export async function onRequest({ request, env }) {
     }
     if (route === '/api/catalogue' && method === 'GET') {
       const { data } = await loadStore(env.DB)
-      return reply(data && { products: data.products, siteImages: data.siteImages, handmadeGallery: data.handmadeGallery, siteContent: data.siteContent || {} })
+      return reply(data && { products: data.products, siteImages: data.siteImages, handmadeGallery: data.handmadeGallery, siteContent: data.siteContent || {}, categories: data.categories || [] })
     }
     if (!['/api/admin/login', '/api/admin/logout', '/api/admin/store'].includes(route)) {
       return reply({ error: 'API route not found.' }, 404)

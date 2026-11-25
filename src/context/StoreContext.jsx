@@ -9,7 +9,7 @@ const ADMIN_ACTIONS = new Set([
 ])
 
 const defaultState = {
-  products: INITIAL_PRODUCTS, siteImages: {}, handmadeGallery: null, siteContent: {},
+  products: INITIAL_PRODUCTS, siteImages: {}, handmadeGallery: null, siteContent: {}, categories: [],
   cart: [], isAdminLoggedIn: false, checkingAdmin: true, catalogueError: false,
   orders: [], users: [], coupons: [], delivery: INITIAL_DELIVERY, toasts: [],
 }
@@ -38,9 +38,12 @@ async function api(path, method = 'GET', payload, signal) {
 }
 
 function getStoreData(state) {
-  const { products, siteImages, handmadeGallery, siteContent, orders, users, coupons, delivery } = state
-  return { products, siteImages, handmadeGallery, siteContent: siteContent || {}, orders, users, coupons, delivery }
+  const { products, siteImages, handmadeGallery, siteContent, categories, orders, users, coupons, delivery } = state
+  return { products, siteImages, handmadeGallery, siteContent: siteContent || {}, categories: categories || [], orders, users, coupons, delivery }
 }
+
+const withCategory = (state, category) => !category || (state.categories || []).some(c => c.id === category.id)
+  ? state : { ...state, categories: [...(state.categories || []), category] }
 
 function reducer(state, action) {
   switch (action.type) {
@@ -64,9 +67,9 @@ function reducer(state, action) {
     case 'SET_SITE_IMAGES':
       return { ...state, ...action.payload }
     case 'ADD_PRODUCT':
-      return { ...state, products: [action.payload, ...state.products] }
+      return { ...withCategory(state, action.category), products: [action.payload, ...state.products] }
     case 'UPDATE_PRODUCT':
-      return { ...state, products: state.products.map(p => p.id === action.payload.id ? action.payload : p) }
+      return { ...withCategory(state, action.category), products: state.products.map(p => p.id === action.payload.id ? action.payload : p) }
     case 'DELETE_PRODUCT':
       return { ...state, products: state.products.filter(p => p.id !== action.payload) }
     case 'UPDATE_ORDER':
@@ -180,7 +183,7 @@ export function StoreProvider({ children }) {
   }
 
   const dispatch = action => ADMIN_ACTIONS.has(action.type) ? saveAction(action) : apply(action)
-  const saveProduct = (product, isNew) => saveAction({ type: isNew ? 'ADD_PRODUCT' : 'UPDATE_PRODUCT', payload: product })
+  const saveProduct = (product, isNew, category) => saveAction({ type: isNew ? 'ADD_PRODUCT' : 'UPDATE_PRODUCT', payload: product, category })
   const saveSiteContent = (siteImages, handmadeGallery, siteContent) => saveAction({ type: 'SET_SITE_IMAGES', payload: { siteImages, handmadeGallery, siteContent } })
 
   return (

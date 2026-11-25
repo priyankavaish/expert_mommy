@@ -21,10 +21,10 @@ export const POLICIES = {
         <p>Each ready-made piece is one of a kind, with a quantity of 1. Because every item is made by hand, small differences in stitches, size and finish are part of its character and are not defects.</p>
         <p>Colours may look slightly different on your screen. Ages shown are approximate; please confirm chest, length and sleeve measurements with us before ordering.</p>
       </>],
-      ['Prices and payment', <p>Prices are listed in Indian Rupees (₹). Delivery charges are confirmed separately in the chat. We may change prices on the website at any time, but the price we confirm with you on WhatsApp is the price you pay.</p>],
+      ['Prices and payment', <p>Prices are listed in Indian Rupees (₹). Delivery charges of ₹149 are added to every order. We may change prices on the website at any time, but the price we confirm with you on WhatsApp is the price you pay.</p>],
       ['Custom orders', <p>For custom orders we agree the design, colours, size, price and making time with you before we start. Making times are estimates, as each piece is made by hand. Once work has started, a custom order cannot be cancelled.</p>],
-      ['Delivery', <p>We ship within India. Delivery time and charges depend on your location and are shared before you pay. We are not responsible for delays caused by the courier, but we will help you track your parcel.</p>],
-      ['Returns', <p>We do not accept returns or exchanges. Please read our <Link to="/return-policy">No Return Policy</Link> for details, including what to do if your parcel arrives damaged.</p>],
+      ['Delivery', <p>We ship within India for a flat delivery charge of ₹149 per order. Delivery time depends on your location and is shared before you pay. We are not responsible for delays caused by the courier, but we will help you track your parcel.</p>],
+      ['Returns', <p>We do not accept returns or exchanges. Any claim for a damaged or wrong item must include a complete, uncut unboxing video; without it, the claim will not be accepted. Please read our <Link to="/return-policy">No Return Policy</Link> for details.</p>],
       ['Use of this website', <p>All photos, text and designs on this website belong to Expert Mommy. Please do not copy or reuse them without our permission.</p>],
       ['Liability', <p>To the extent allowed by law, our total liability for any order is limited to the amount you paid for that order.</p>],
       ['Governing law', <p>These terms are governed by the laws of India. Any disputes are subject to the jurisdiction of the courts in India.</p>],
@@ -39,6 +39,7 @@ export const POLICIES = {
       ['Overview', <p>Expert Mommy respects your privacy. This policy explains what information we collect, why, and how we look after it.</p>],
       ['Information we collect', <>
         <p><strong>When you message us on WhatsApp or email:</strong> your name, phone number, delivery address, the measurements you share, and your messages. We need these to answer your enquiry and deliver your order.</p>
+        <p><strong>When you report a problem with an order:</strong> the unboxing video and photos you send. We use them only to check your claim, as an uncut unboxing video is required for any return, replacement or refund request (see our <Link to="/return-policy">No Return Policy</Link>).</p>
         <p><strong>When you browse the website:</strong> we do not ask you to create an account and we do not take card or bank details on this website. Your enquiry list is saved only in your own browser.</p>
         <p><strong>Technical data:</strong> our hosting provider (Cloudflare) processes basic technical information, such as your IP address and browser type, to deliver the website securely.</p>
       </>],
@@ -59,16 +60,20 @@ export const POLICIES = {
   },
   'return-policy': {
     title: 'No Return Policy',
-    description: 'Expert Mommy does not accept returns or exchanges on handmade pieces. Read what to do if your parcel arrives damaged.',
+    description: 'Expert Mommy does not accept returns or exchanges on handmade pieces. An uncut unboxing video is required for any damaged or wrong item claim.',
     sections: [
       ['All sales are final', <>
         <p>Every Expert Mommy piece is handmade and one of a kind. For this reason, <strong>we do not accept returns or exchanges</strong>, and we do not give refunds for change of mind, size or colour preference.</p>
         <p>Please check the photos and confirm the measurements with us on WhatsApp before you pay. We are always happy to answer questions and send extra photos.</p>
       </>],
       ['Custom orders', <p>Custom pieces are made especially for you, so they cannot be returned, exchanged or cancelled once work has started.</p>],
+      ['Unboxing video is required', <>
+        <p>Please record a <strong>clear, uncut video while opening your parcel</strong>, starting from the sealed package and showing the product clearly.</p>
+        <p><strong>Without a complete unboxing video, we cannot accept any return, replacement or refund request</strong>, including claims of a damaged, missing or wrong item.</p>
+      </>],
       ['Damaged or wrong item', <>
-        <p>If your parcel arrives damaged, or you receive a different item from the one you ordered, please tell us on WhatsApp <strong>within 48 hours of delivery</strong>. Send photos of the item and the packaging, and an unboxing video if you have one.</p>
-        <p>After checking, we will repair the piece, send a replacement where possible, or refund you. Refunds are made to your original payment method.</p>
+        <p>If your parcel arrives damaged, or you receive a different item from the one you ordered, please tell us on WhatsApp <strong>within 48 hours of delivery</strong>. Send the unboxing video along with photos of the item and the packaging.</p>
+        <p>After checking the video, we will repair the piece, send a replacement where possible, or refund you. Refunds are made to your original payment method.</p>
       </>],
       ['Cancellations', <p>You can cancel a ready-made order before we dispatch it. Once your parcel has been dispatched, the order cannot be cancelled.</p>],
       ['Contact us', <Contact />],

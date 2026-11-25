@@ -66,12 +66,18 @@ test('admin changes require a valid session and publish public data only', async
   assert.equal((await call('admin/store', 'PUT', { revision, data }, cookie)).status, 200)
   assert.equal((await call('admin/store', 'PUT', { revision, data }, cookie)).status, 409)
   const publicData = await (await call('catalogue')).json()
-  assert.deepEqual(Object.keys(publicData), ['products', 'siteImages', 'handmadeGallery', 'siteContent'])
+  assert.deepEqual(Object.keys(publicData), ['products', 'siteImages', 'handmadeGallery', 'siteContent', 'categories'])
   assert.deepEqual(publicData.siteContent, {})
-  const withText = { ...data, siteContent: { 'shop.title': 'New *title*' } }
+  assert.deepEqual(publicData.categories, [])
+  const withText = { ...data, siteContent: { 'shop.title': 'New *title*' }, categories: [{ id: 'socks', name: 'Socks' }] }
   const latest = (await (await call('admin/store', 'GET', undefined, cookie)).json()).revision
   assert.equal((await call('admin/store', 'PUT', { revision: latest, data: withText }, cookie)).status, 200)
-  assert.equal((await (await call('catalogue')).json()).siteContent['shop.title'], 'New *title*')
+  const published = await (await call('catalogue')).json()
+  assert.equal(published.siteContent['shop.title'], 'New *title*')
+  assert.deepEqual(published.categories, [{ id: 'socks', name: 'Socks' }])
+  const badCategory = { ...withText, categories: [{ id: 'Bad Id', name: 'x' }] }
+  const latest3 = (await (await call('admin/store', 'GET', undefined, cookie)).json()).revision
+  assert.equal((await call('admin/store', 'PUT', { revision: latest3, data: badCategory }, cookie)).status, 400)
   const badText = { ...withText, siteContent: { 'bad key!': 'x' } }
   const latest2 = (await (await call('admin/store', 'GET', undefined, cookie)).json()).revision
   assert.equal((await call('admin/store', 'PUT', { revision: latest2, data: badText }, cookie)).status, 400)

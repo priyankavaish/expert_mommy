@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Search, Edit2, X, AlertTriangle, TrendingDown } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
-import { CATEGORIES } from '../../data/initialData'
+import { allCategories, categoryName } from '../../data/categories'
 
 export default function AdminInventory() {
   const { state, dispatch, toast } = useStore()
@@ -87,7 +87,7 @@ export default function AdminInventory() {
             style={{ padding: '9px 14px', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 13.5, outline: 'none', background: 'var(--white)', cursor: 'pointer' }}
           >
             <option value="all">All Categories</option>
-            {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {allCategories(state).map(c =><option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -115,7 +115,7 @@ export default function AdminInventory() {
           <tbody>
             {sorted.map(p => {
               const { cls, label } = getStockStatus(p.stock)
-              const catName = CATEGORIES.find(c => c.id === p.category)?.name || p.category
+              const catName = categoryName(state, p.category)
               const maxStock = 30
               const pct = Math.min(100, (p.stock / maxStock) * 100)
               const barColor = p.stock === 0 ? '#E53935' : p.stock <= 5 ? '#FF9800' : '#4CAF50'

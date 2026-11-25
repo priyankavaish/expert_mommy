@@ -3,8 +3,10 @@ import { Search, Plus, Edit2, Trash2, X } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
 import { CATEGORIES } from '../../data/initialData'
 import { AGE_LABELS } from '../../data/ages'
+import { allCategories, categoryName, slugify } from '../../data/categories'
 
-const EMPTY = { name: '', category: CATEGORIES[0].id, ageGroup: '', tags: '', images: [], rating: '', reviews: '', price: '', originalPrice: '', stock: '', sku: '', description: '', featured: false, newArrival: false }
+const NEW_CATEGORY = '__new', CUSTOM_AGE = '__custom'
+const EMPTY = { name: '', category: CATEGORIES[0].id, newCategory: '', ageGroup: '', ageCustom: '', tags: '', images: [], rating: '', reviews: '', price: '', originalPrice: '', stock: '', sku: '', description: '', featured: false, newArrival: false }
 
 export default function AdminProducts() {
   const { state, dispatch, saveProduct, toast } = useStore()
@@ -16,6 +18,7 @@ export default function AdminProducts() {
   const [deleteId, setDeleteId] = useState(null)
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  const categories = allCategories(state)
 
   const filtered = state.products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -30,8 +33,11 @@ export default function AdminProducts() {
 
   const openEdit = p => {
     const images = [...new Set([p.image, ...(p.images || [])].filter(Boolean))]
+    const customAge = p.ageGroup && !AGE_LABELS[p.ageGroup]
     setForm({
       ...EMPTY, ...p, images,
+      ageGroup: customAge ? CUSTOM_AGE : p.ageGroup || '',
+      ageCustom: customAge ? p.ageGroup : '',
       originalPrice: p.originalPrice ?? '',
       tags: (p.tags || []).join(', '),
     })
@@ -102,9 +108,25 @@ export default function AdminProducts() {
       toast('Add at least one product image.', 'error')
       return
     }
+    let category = form.category, newCategory
+    if (category === NEW_CATEGORY) {
+      const name = form.newCategory.trim()
+      const id = slugify(name)
+      if (!id) {
+        toast('Enter a name for the new category.', 'error')
+        return
+      }
+      const existing = categories.find(c => c.id === id || c.name.toLowerCase() === name.toLowerCase())
+      category = existing ? existing.id : id
+      if (!existing) newCategory = { id, name: name.slice(0, 80) }
+    }
+    const ageGroup = form.ageGroup === CUSTOM_AGE ? form.ageCustom.trim().slice(0, 60) : form.ageGroup
+    const { newCategory: _typedCategory, ageCustom: _typedAge, ...details } = form
 
     const product = {
-      ...form,
+      ...details,
+      category,
+      ageGroup,
       id: form.id || 'p' + Date.now(),
       name: name.trim(),
       price: Number(price),
@@ -115,7 +137,7 @@ export default function AdminProducts() {
       tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
       image: images[0],
     }
-    if (!await saveProduct(product, modal === 'add')) return
+    if (!await saveProduct(product, modal === 'add', newCategory)) return
     toast(modal === 'add' ? 'Product added successfully!' : 'Product updated!')
     setModal(null)
   }
@@ -170,7 +192,7 @@ export default function AdminProducts() {
           </thead>
           <tbody>
             {filtered.map(p => {
-              const catName = CATEGORIES.find(c => c.id === p.category)?.name || p.category
+              const catName = categoryName(state, p.category)
               return (
                 <tr key={p.id}>
                   <td>
@@ -238,8 +260,14 @@ export default function AdminProducts() {
               <div className="frow">
                 <label>Category *</label>
                 <select className="fselect finput" value={form.category} onChange={e => set('category', e.target.value)}>
-                  {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {!categories.some(c => c.id === form.category) && form.category !== NEW_CATEGORY && <option value={form.category}>{form.category}</option>}
+                  <option value={NEW_CATEGORY}>+ Add new category…</option>
                 </select>
+                {form.category === NEW_CATEGORY && (
+                  <input className="finput" style={{ marginTop: 8 }} autoFocus aria-label="New category name" maxLength={80}
+                    value={form.newCategory} onChange={e => set('newCategory', e.target.value)} placeholder="e.g. Socks, Gloves, Caps" />
+                )}
               </div>
               <div className="frow">
                 <label>Sale Price (&#8377;) *</label>
@@ -255,12 +283,18 @@ export default function AdminProducts() {
               </div>
             </div>
             <div className="fgrid">
-              <label className="frow">Age Group
-                <select className="fselect finput" value={form.ageGroup} onChange={e => set('ageGroup', e.target.value)}>
-                  <option value="">Unspecified</option>
+              <div className="frow">
+                <label htmlFor="product-age">Age Group (optional)</label>
+                <select id="product-age" className="fselect finput" value={form.ageGroup} onChange={e => set('ageGroup', e.target.value)}>
+                  <option value="">No age / not applicable</option>
                   {Object.entries(AGE_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+                  <option value={CUSTOM_AGE}>Custom age…</option>
                 </select>
-              </label>
+                {form.ageGroup === CUSTOM_AGE && (
+                  <input className="finput" style={{ marginTop: 8 }} autoFocus aria-label="Custom age" maxLength={60}
+                    value={form.ageCustom} onChange={e => set('ageCustom', e.target.value)} placeholder="e.g. 3-5 years, Newborn, Free size" />
+                )}
+              </div>
               <label className="frow">Tags
                 <input className="finput" value={form.tags} onChange={e => set('tags', e.target.value)} placeholder="winter, sweater" />
               </label>
