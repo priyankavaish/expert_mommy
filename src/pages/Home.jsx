@@ -6,7 +6,9 @@ import ProductCard from '../components/ProductCard'
 import MakerStory from '../components/MakerStory'
 import HandmadeGallery from '../components/HandmadeGallery'
 import { Rich, useContent } from '../components/Content'
-import { customUrl } from '../data/whatsapp'
+import { customUrl, WHATSAPP_NUMBER } from '../data/whatsapp'
+import { SOCIAL_LINKS } from '../data/social'
+import Seo from '../components/Seo'
 import { imageSlots } from '../data/siteImages'
 import useReveal from '../hooks/useReveal'
 export default function Home() {
@@ -14,7 +16,14 @@ export default function Home() {
  const hero = useContent('homeHero'), values = useContent('homeValues'), feat = useContent('homeFeatured'), custom = useContent('custom'), how = useContent('how')
  const featured = state.products.filter(p => p.featured).slice(0, 4)
  useReveal([state.products])
+ const origin = window.location.origin
  return <main className="atelier">
+   <Seo jsonLd={[
+     { '@context': 'https://schema.org', '@type': 'OnlineStore', name: 'Expert Mommy', url: origin + '/', logo: origin + '/favicon.png', image: origin + '/og-image.jpg',
+       description: 'Handmade hand-knitted and crochet sweaters for babies and kids, made by Pushpa Rani.', email: 'expertmommy6199@gmail.com', telephone: '+' + WHATSAPP_NUMBER,
+       areaServed: 'IN', founder: { '@type': 'Person', name: 'Pushpa Rani' }, sameAs: SOCIAL_LINKS.map(s => s.url) },
+     { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Expert Mommy', url: origin + '/' },
+   ]}/>
    <section className="atelier-hero"><div className="container atelier-hero-grid">
      <div className="atelier-hero-copy"><span className="eyebrow"><span/> <Rich text={hero('eyebrow')}/></span><h1><Rich text={hero('title')}/></h1><p><Rich text={hero('text')}/></p><div className="atelier-buttons"><Link className="btn btn-primary" to="/shop"><Rich text={hero('primaryButton')}/> <ArrowRight size={17}/></Link><a className="text-link" href="#custom"><Rich text={hero('secondaryLink')}/></a></div><div className="hero-note"><Heart size={16}/><span><Rich text={hero('note')}/></span></div></div>
      <div className="atelier-hero-art"><div className="hero-ring"/><span className="handwritten hero-handwriting"><Rich text={hero('handwriting')}/></span><img src={state.siteImages?.homeHero || imageSlots.homeHero.src} alt={state.siteImages?.homeHero ? "Expert Mommy handmade collection" : imageSlots.homeHero.alt} fetchPriority="high"/><span className="hero-seal"><Heart size={22}/><Rich text={hero('seal')}/></span><span className="hero-art-caption"><Rich text={hero('caption')}/> <span><Rich text={hero('captionSub')}/></span></span></div>

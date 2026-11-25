@@ -4,6 +4,7 @@ import {
   Bell, LogOut, ExternalLink, Image
 } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
+import Seo from '../../components/Seo'
 
 const nav = [
   { label: 'Dashboard', to: '/admin', icon: LayoutDashboard, exact: true },
@@ -27,6 +28,7 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="admin-wrap">
+      <Seo title="Admin" noindex />
       {/* Sidebar */}
       <aside className="admin-sidebar">
         <div className="adm-brand">

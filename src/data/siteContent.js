@@ -133,7 +133,6 @@ export const contentSections = [
       contactTitle: text('Contact column heading', 'Say hello'),
       email: text('Email address', 'expertmommy6199@gmail.com'),
       contactNote: text('Contact column note', 'Availability, sizing, payment and delivery are confirmed on WhatsApp.', true),
-      madeIn: text('Bottom line', 'Handmade with ♥ in India'),
     },
   },
 ]

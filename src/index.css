@@ -1497,6 +1497,21 @@ a:focus-visible, button:focus-visible, summary:focus-visible, select:focus-visib
 .site-image-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .site-image-actions input { flex: 1 1 180px; }
 .site-gallery-slide { padding: 4px 0 12px; }
+.login-submit { margin-top: 12px; }
+.policy-page { max-width: 820px; padding-top: 40px; padding-bottom: 70px; }
+.policy-page h1 { font-size: clamp(34px, 4vw, 48px); margin: 14px 0 6px; }
+.policy-updated { font-size: 12px; color: var(--text-medium); margin-bottom: 26px; }
+.policy-page section { padding: 18px 0; border-top: 1px solid #e5dbce; }
+.policy-page h2 { font-size: 20px; margin-bottom: 10px; }
+.policy-page p, .policy-page li { font-size: 14px; line-height: 1.8; color: var(--text-medium); }
+.policy-page p + p { margin-top: 10px; }
+.policy-page ul { padding-left: 20px; list-style: disc; }
+.policy-page a { color: var(--primary); text-decoration: underline; }
+.policy-links { display: flex; flex-wrap: wrap; gap: 18px; padding-top: 24px; border-top: 1px solid #e5dbce; }
+.atelier-footer-bottom { align-items: center; }
+.footer-policies { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; font-size: 11px; }
+.footer-policies a:hover { color: var(--primary); }
+.product-slideshow-toggle { margin-top: 18px; }
 .site-image-settings code { background: #f0ebe4; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
 .site-content-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
 .site-content-tabs button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: #fff; font-size: 13px; font-weight: 500; color: var(--text-dark); cursor: pointer; text-align: left; }

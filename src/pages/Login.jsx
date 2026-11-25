@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../context/StoreContext'
 import { imageSlots } from '../data/siteImages'
+import Seo from '../components/Seo'
 
 export default function Login() {
   const { state, loginAdmin } = useStore()
@@ -27,6 +28,7 @@ export default function Login() {
 
   return (
     <main className="login-page">
+      <Seo title="Admin sign-in" noindex />
       <div className="login-card">
         <div className="login-logo-wrap">
           <img src={state.siteImages.logo || imageSlots.logo.src} alt="Expert Mommy" style={{ height: 72, width: 'auto', margin: '0 auto' }} />
@@ -40,7 +42,7 @@ export default function Login() {
             <input className="finput" name="password" type="password" required autoComplete="current-password" maxLength={512} />
           </label>
           {error && <p role="alert">{error}</p>}
-          <button className="btn btn-primary" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>
+          <button className="btn btn-primary login-submit" disabled={pending}>{pending ? 'Signing in…' : 'Sign in'}</button>
         </form>
       </div>
     </main>

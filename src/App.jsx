@@ -8,6 +8,7 @@ import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import Login from './pages/Login'
+import Policy, { POLICIES } from './pages/Policy'
 import AdminLayout from './pages/admin/AdminLayout'
 import Dashboard from './pages/admin/Dashboard'
 import SiteImages from './pages/admin/SiteImages'
@@ -36,6 +37,7 @@ function StorePage() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+        {Object.keys(POLICIES).map(slug => <Route key={slug} path={'/' + slug} element={<Policy slug={slug} />} />)}
         <Route path="/login" element={<Navigate to="/shop" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
