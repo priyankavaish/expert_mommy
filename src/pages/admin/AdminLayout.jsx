@@ -8,7 +8,7 @@ import { useStore } from '../../context/StoreContext'
 const nav = [
   { label: 'Dashboard', to: '/admin', icon: LayoutDashboard, exact: true },
   { label: 'Products', to: '/admin/products', icon: Package },
-  { label: 'Site Images', to: '/admin/site-images', icon: Image },
+  { label: 'Website Content', to: '/admin/site-images', icon: Image },
   { label: 'Orders', to: '/admin/orders', icon: ShoppingCart, badge: true },
   { label: 'Customers', to: '/admin/users', icon: Users },
   { label: 'Coupons', to: '/admin/coupons', icon: Tag },

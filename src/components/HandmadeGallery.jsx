@@ -4,13 +4,13 @@ import { defaultGallery } from '../data/siteImages'
 import { useStore } from '../context/StoreContext'
 import { whatsappUrl } from '../data/whatsapp'
 import usePhotoRotation from '../hooks/usePhotoRotation'
-
-
+import { Rich, useContent } from './Content'
 
 const enquiryUrl = whatsappUrl("Hi Expert Mommy! I'd love to discuss a custom handmade piece. Can we talk about my idea?")
 
 export default function HandmadeGallery() {
   const { state } = useStore()
+  const t = useContent('gallery')
   const photos = state.handmadeGallery ?? defaultGallery
   const [paused, setPaused] = useState(false)
   const [active, setActive] = usePhotoRotation(photos.length, paused)
@@ -26,11 +26,11 @@ export default function HandmadeGallery() {
     <section className="handmade-gallery" aria-labelledby="handmade-gallery-title">
       <div className="container handmade-gallery-grid">
         <div className="handmade-gallery-copy">
-          <h2 id="handmade-gallery-title">From tiny shoes to <em>treasured keepsakes.</em></h2>
-          <p>Alongside our cosy sweaters, we crochet bags for little adventures, flower clips and gajras for your hair, soft toys to hug, and keepsake boxes for the things you love. We make caps and tiny shoes, too.</p>
-          <p>Have a colour, a gift, or a design in mind? Tell us what you'd love to have made.</p>
+          <h2 id="handmade-gallery-title"><Rich text={t('title')} /></h2>
+          <p><Rich text={t('text1')} /></p>
+          <p><Rich text={t('text2')} /></p>
           <a className="btn btn-primary" href={enquiryUrl} target="_blank" rel="noopener noreferrer">
-            <MessageCircle size={17} /> Discuss a custom order
+            <MessageCircle size={17} /> <Rich text={t('button')} />
           </a>
         </div>
         {photo && <div className="handmade-gallery-carousel" role="group" aria-label="Handmade creations gallery">

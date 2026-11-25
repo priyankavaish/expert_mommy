@@ -9,7 +9,7 @@ const ADMIN_ACTIONS = new Set([
 ])
 
 const defaultState = {
-  products: INITIAL_PRODUCTS, siteImages: {}, handmadeGallery: null,
+  products: INITIAL_PRODUCTS, siteImages: {}, handmadeGallery: null, siteContent: {},
   cart: [], isAdminLoggedIn: false, checkingAdmin: true, catalogueError: false,
   orders: [], users: [], coupons: [], delivery: INITIAL_DELIVERY, toasts: [],
 }
@@ -38,8 +38,8 @@ async function api(path, method = 'GET', payload, signal) {
 }
 
 function getStoreData(state) {
-  const { products, siteImages, handmadeGallery, orders, users, coupons, delivery } = state
-  return { products, siteImages, handmadeGallery, orders, users, coupons, delivery }
+  const { products, siteImages, handmadeGallery, siteContent, orders, users, coupons, delivery } = state
+  return { products, siteImages, handmadeGallery, siteContent: siteContent || {}, orders, users, coupons, delivery }
 }
 
 function reducer(state, action) {
@@ -181,10 +181,10 @@ export function StoreProvider({ children }) {
 
   const dispatch = action => ADMIN_ACTIONS.has(action.type) ? saveAction(action) : apply(action)
   const saveProduct = (product, isNew) => saveAction({ type: isNew ? 'ADD_PRODUCT' : 'UPDATE_PRODUCT', payload: product })
-  const saveSiteImages = (siteImages, handmadeGallery) => saveAction({ type: 'SET_SITE_IMAGES', payload: { siteImages, handmadeGallery } })
+  const saveSiteContent = (siteImages, handmadeGallery, siteContent) => saveAction({ type: 'SET_SITE_IMAGES', payload: { siteImages, handmadeGallery, siteContent } })
 
   return (
-    <StoreContext.Provider value={{ state, dispatch, toast, saveProduct, saveSiteImages, loginAdmin, logoutAdmin }}>
+    <StoreContext.Provider value={{ state, dispatch, toast, saveProduct, saveSiteContent, loginAdmin, logoutAdmin }}>
       {state.catalogueError && <div className="atelier-announcement" role="status">Live stock and prices are temporarily unavailable. Please confirm details on WhatsApp.</div>}
       {children}
       <div className="toast-wrap" aria-live="polite">

@@ -66,7 +66,15 @@ test('admin changes require a valid session and publish public data only', async
   assert.equal((await call('admin/store', 'PUT', { revision, data }, cookie)).status, 200)
   assert.equal((await call('admin/store', 'PUT', { revision, data }, cookie)).status, 409)
   const publicData = await (await call('catalogue')).json()
-  assert.deepEqual(Object.keys(publicData), ['products', 'siteImages', 'handmadeGallery'])
+  assert.deepEqual(Object.keys(publicData), ['products', 'siteImages', 'handmadeGallery', 'siteContent'])
+  assert.deepEqual(publicData.siteContent, {})
+  const withText = { ...data, siteContent: { 'shop.title': 'New *title*' } }
+  const latest = (await (await call('admin/store', 'GET', undefined, cookie)).json()).revision
+  assert.equal((await call('admin/store', 'PUT', { revision: latest, data: withText }, cookie)).status, 200)
+  assert.equal((await (await call('catalogue')).json()).siteContent['shop.title'], 'New *title*')
+  const badText = { ...withText, siteContent: { 'bad key!': 'x' } }
+  const latest2 = (await (await call('admin/store', 'GET', undefined, cookie)).json()).revision
+  assert.equal((await call('admin/store', 'PUT', { revision: latest2, data: badText }, cookie)).status, 400)
   assert.equal(publicData.products[0].stock, 0)
   const photo = await call(publicData.products[0].image.replace('/api/', ''))
   assert.equal(photo.headers.get('Content-Type'), 'image/png')

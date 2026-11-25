@@ -2,6 +2,7 @@ import { Instagram, Play } from 'lucide-react'
 import { useStore } from '../context/StoreContext'
 import useReveal from '../hooks/useReveal'
 import { SOCIAL_LINKS } from '../data/social'
+import { Rich, useContent } from './Content'
 import photo1 from '../assets/instagram/post-1.jpg'
 import photo2 from '../assets/instagram/post-2.jpg'
 import photo3 from '../assets/instagram/post-3.jpg'
@@ -24,6 +25,7 @@ const photos = [
 
 export default function InstagramSection() {
   const { state } = useStore()
+  const t = useContent('instagram')
   const displayedPhotos = photos.map((photo, i) => {
     const image = state.siteImages?.['instagram' + i]
     return image ? { image, alt: 'Expert Mommy Instagram photo ' + (i + 1), type: 'photo' } : photo
@@ -34,7 +36,7 @@ export default function InstagramSection() {
     <section className="instagram-section reveal" aria-labelledby="instagram-heading">
       <div className="container">
         <div className="instagram-gallery-heading">
-          <div><span className="eyebrow">FROM OUR INSTAGRAM</span><h2 id="instagram-heading">Little moments.<br /><em>Lots of handmade love.</em></h2><p>A peek at the creations and celebrations shared by Expert Mommy.</p></div>
+          <div><span className="eyebrow"><Rich text={t('eyebrow')} /></span><h2 id="instagram-heading"><Rich text={t('title')} /></h2><p><Rich text={t('text')} /></p></div>
           <a className="btn btn-outline" href={instagram.url} target="_blank" rel="noopener noreferrer"><Instagram size={17} /> {instagram.handle}</a>
         </div>
         <div className="instagram-photo-grid">
@@ -42,7 +44,7 @@ export default function InstagramSection() {
             {[...displayedPhotos, ...displayedPhotos].map((photo, i) => <a key={photo.image + i} href={instagram.url} target="_blank" rel="noopener noreferrer" aria-label={photo.alt + ' - explore on Instagram'}><img src={photo.image} alt={photo.alt} loading="lazy" width="540" height="540" /><span className="instagram-tile-icon">{photo.type === 'reel' ? <Play size={17} /> : <Instagram size={17} />}</span><span className="instagram-tile-hover">Explore on Instagram</span></a>)}
           </div>
         </div>
-        <a className="instagram-gallery-footer" href={instagram.url} target="_blank" rel="noopener noreferrer">See more on Instagram</a>
+        <a className="instagram-gallery-footer" href={instagram.url} target="_blank" rel="noopener noreferrer"><Rich text={t('footer')} /></a>
       </div>
     </section>
   )
